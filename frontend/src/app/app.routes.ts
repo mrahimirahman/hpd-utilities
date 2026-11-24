@@ -9,6 +9,7 @@ import { ReportAuditLogComponent } from './features/reports/report-audit-log.com
 import { ReportsMenuComponent } from './features/reports/reports-menu.component';
 import { ReportPlaceholderComponent } from './features/reports/report-placeholder.component';
 import { DamaDiagnosisReportComponent } from './features/reports/dama-diagnosis-report.component';
+import { DischargeDateComponent } from './features/discharge-date/discharge-date.component';
 
 export const appRoutes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -89,7 +90,8 @@ export const appRoutes: Routes = [
           reportStatus: 'Menu disediakan. Pecahan kes baharu dan ulangan belum dibina.'
         }
       },
-      { path: 'reports/audit', component: ReportAuditLogComponent }
+      { path: 'reports/audit', component: ReportAuditLogComponent },
+      { path: 'discharge-date', component: DischargeDateComponent }
     ]
   },
   { path: '**', redirectTo: '' }

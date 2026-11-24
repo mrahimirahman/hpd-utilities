@@ -1,0 +1,150 @@
+<section class="discharge-shell">
+  <div class="discharge-header">
+    <h2>Changes Discharge Date</h2>
+    <p>Pembetulan tarikh discaj pesakit (Borang Aduan HIS&#64;KKM). Cari pesakit melalui MRN, pilih encounter, kemudian kemaskini tarikh discaj. Setiap perubahan direkod dalam audit trail.</p>
+  </div>
+
+  <section class="card discharge-search">
+    <label>
+      <span>MRN Pesakit</span>
+      <div class="mrn-input">
+        <span class="mrn-prefix">HPD</span>
+        <input type="text" [(ngModel)]="mrn" (keyup.enter)="search()" placeholder="cth. 321155">
+      </div>
+    </label>
+
+    <div class="actions">
+      <button class="primary" type="button" (click)="search()" [disabled]="isSearching() || isSaving()">
+        {{ isSearching() ? 'Searching...' : 'Search' }}
+      </button>
+    </div>
+
+    <div class="report-success" *ngIf="successMessage()">{{ successMessage() }}</div>
+    <div class="report-error" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+  </section>
+
+  <section class="card discharge-table" *ngIf="hasSearched()">
+    <div class="table-header">
+      <h3>Rekod Admission (IN)</h3>
+      <p>Pilih rekod yang hendak dibetulkan.</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!isSearching() && rows().length === 0 && !errorMessage()">
+      Tiada rekod admission dijumpai untuk MRN ini.
+    </div>
+
+    <div class="table-scroll" *ngIf="rows().length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>MRN</th>
+            <th>Nama</th>
+            <th>IC Baru</th>
+            <th>Encounter ID</th>
+            <th>Tarikh Encounter</th>
+            <th>Wad Discaj</th>
+            <th>Discharge (encounters)</th>
+            <th>Discharge (enc_discharges)</th>
+            <th>Pre Discharge Date</th>
+            <th>Pre Discharge Time</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows()" [class.selected]="selected()?.encounterId === row.encounterId">
+            <td>{{ row.patientMrn }}</td>
+            <td>{{ row.personName }}</td>
+            <td>{{ row.personNewIc }}</td>
+            <td>{{ row.encounterId }}</td>
+            <td>{{ row.encounterDate }}</td>
+            <td>{{ row.dischargeWard }}</td>
+            <td>{{ row.encounterDischargeDate || '-' }}</td>
+            <td>{{ row.encDischargeDate || '-' }}</td>
+            <td>{{ row.preDischargeDate || '-' }}</td>
+            <td>{{ row.preDischargeTime || '-' }}</td>
+            <td>
+              <button class="secondary" type="button" (click)="select(row)" [disabled]="isSaving()">Pilih</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card discharge-edit" *ngIf="selected() as row">
+    <div class="table-header">
+      <h3>Kemaskini Tarikh Discaj</h3>
+      <p>{{ row.patientMrn }} &middot; {{ row.personName }} &middot; Encounter {{ row.encounterId }} &middot; Admission {{ row.encounterDate }}</p>
+    </div>
+
+    <div class="edit-grid">
+      <label>
+        <span>Discharge Date</span>
+        <input type="date" [(ngModel)]="dischargeDate">
+        <small>Semasa: encounters {{ row.encounterDischargeDate || '-' }} / enc_discharges {{ row.encDischargeDate || '-' }}</small>
+      </label>
+
+      <label>
+        <span>Pre Discharge Date</span>
+        <input type="date" [(ngModel)]="preDischargeDate">
+        <small>Semasa: {{ row.preDischargeDate || '-' }}</small>
+      </label>
+
+      <label>
+        <span>Pre Discharge Time</span>
+        <input type="time" [(ngModel)]="preDischargeTime">
+        <small>Semasa: {{ row.preDischargeTime || '-' }}</small>
+      </label>
+
+      <label class="reason">
+        <span>Penerangan / Sebab</span>
+        <textarea rows="2" maxlength="500" [(ngModel)]="reason" placeholder="cth. Salah tarikh discaj, tarikh betul 20/11/26 (Borang Aduan Wad Dahlia)"></textarea>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button class="primary" type="button" (click)="save()" [disabled]="isSaving()">
+        {{ isSaving() ? 'Saving...' : 'Save' }}
+      </button>
+      <button class="secondary" type="button" (click)="cancel()" [disabled]="isSaving()">Cancel</button>
+    </div>
+  </section>
+
+  <section class="card discharge-table" *ngIf="selected()">
+    <div class="table-header">
+      <h3>Audit Trail</h3>
+      <p>Sejarah perubahan untuk encounter ini (sebelum &rarr; selepas).</p>
+    </div>
+
+    <div class="empty-state" *ngIf="auditEntries().length === 0">
+      Tiada perubahan direkodkan.
+    </div>
+
+    <div class="table-scroll" *ngIf="auditEntries().length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Tarikh Kemaskini</th>
+            <th>Oleh</th>
+            <th>Discharge (encounters)</th>
+            <th>Discharge (enc_discharges)</th>
+            <th>Pre Discharge Date</th>
+            <th>Pre Discharge Time</th>
+            <th>Sebab</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of auditEntries()">
+            <td>{{ entry.editedAt }}</td>
+            <td>{{ entry.editedName || entry.editedBy }}</td>
+            <td>{{ entry.encounterDischargeDateBefore || '-' }} &rarr; {{ entry.encounterDischargeDateAfter || '-' }}</td>
+            <td>{{ entry.encDischargeDateBefore || '-' }} &rarr; {{ entry.encDischargeDateAfter || '-' }}</td>
+            <td>{{ entry.preDischargeDateBefore || '-' }} &rarr; {{ entry.preDischargeDateAfter || '-' }}</td>
+            <td>{{ entry.preDischargeTimeBefore || '-' }} &rarr; {{ entry.preDischargeTimeAfter || '-' }}</td>
+            <td>{{ entry.reason || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

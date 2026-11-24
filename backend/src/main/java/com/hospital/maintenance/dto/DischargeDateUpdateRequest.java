@@ -1,0 +1,50 @@
+package com.hospital.maintenance.dto;
+
+public class DischargeDateUpdateRequest {
+
+    private String encounterId;
+    private String dischargeDate;
+    private String preDischargeDate;
+    private String preDischargeTime;
+    private String reason;
+
+    public String getEncounterId() {
+        return encounterId;
+    }
+
+    public void setEncounterId(String encounterId) {
+        this.encounterId = encounterId;
+    }
+
+    public String getDischargeDate() {
+        return dischargeDate;
+    }
+
+    public void setDischargeDate(String dischargeDate) {
+        this.dischargeDate = dischargeDate;
+    }
+
+    public String getPreDischargeDate() {
+        return preDischargeDate;
+    }
+
+    public void setPreDischargeDate(String preDischargeDate) {
+        this.preDischargeDate = preDischargeDate;
+    }
+
+    public String getPreDischargeTime() {
+        return preDischargeTime;
+    }
+
+    public void setPreDischargeTime(String preDischargeTime) {
+        this.preDischargeTime = preDischargeTime;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+}

@@ -14,6 +14,7 @@ import { AiAssistantComponent } from '../features/assistant/ai-assistant.compone
 export class DashboardLayoutComponent {
   readonly menuItems = [
     { label: 'HPD Reports', route: '/reports', icon: 'HP' },
+    { label: 'Changes Discharge Date', route: '/discharge-date', icon: 'DD' },
     { label: 'Audit Log', route: '/reports/audit', icon: 'AL', requiresAdmin: true }
   ];
 
