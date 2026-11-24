@@ -58,9 +58,9 @@ Full deploy procedure (Ubuntu target `10.29.59.55`, nginx + systemd, backend on 
 
 **API base URL switches by hostname.** `frontend/src/app/core/api.config.ts` uses `http://localhost:8080/api` when the browser host is `localhost`/`127.0.0.1`, otherwise relative `/api` (so nginx proxies it). Don't hardcode absolute URLs in services.
 
-**Routing default.** After login the user lands on `/reports` (HPD Reports menu), NOT `/dashboard`. Many report routes are placeholders (`ReportPlaceholderComponent`) with Malay description text — only `pd103`, `dama-diagnosis`, and `audit` are wired to real logic. See `frontend/src/app/app.routes.ts`.
+**Routing default.** After login the user lands on `/reports` (HPD Reports menu), NOT `/dashboard`. Many report routes are placeholders (`ReportPlaceholderComponent`) with Malay description text — only `pd103`, `dama-diagnosis`, and `audit` are wired to real logic, plus the top-level `/discharge-date` (Update Discharge Time) and `/death-date` (Update Death Date) tools, which share one component and service (`mode` = DISCHARGE / DEATH). See `frontend/src/app/app.routes.ts`.
 
-**Audit log.** Editable grid reports (PD103 inpatient) write every cell edit into `report_edit_audit`. `InpatientReportService.ensureAuditTable()` lazy-creates the table; report writes always go through the audit path. Only `ADMIN` sees the Audit Log menu.
+**Audit log.** Editable grid reports (PD103 inpatient) write every cell edit into `report_edit_audit`. `InpatientReportService.ensureAuditTable()` lazy-creates the table; report writes always go through the audit path. Only `ADMIN` sees the Audit Log menu. `DischargeDateService` follows the same pattern: it writes directly to `his_kkm` clinical tables (`encounters`, `enc_discharges`, `enc_admissions`) in one `@Transactional` update, and records before/after values in the lazy-created `discharge_date_audit` table. Any logged-in user can edit (a deliberate choice).
 
 **Assistant fallback chain.** `OpenAiAssistantService.chat()` → tries `AssistantCommandService.tryHandle()` for built-in slash-style commands first → if no `OPENAI_API_KEY` configured, returns `LocalAssistantFallbackService` reply → on OpenAI 429 / network failure, also falls back. All paths return `success=true`; check `configured` flag to know if OpenAI was actually used.
 
