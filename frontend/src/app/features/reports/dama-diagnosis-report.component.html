@@ -1,0 +1,96 @@
+<section class="dama-shell">
+  <div class="dama-header">
+    <div>
+      <h2>Data Diagnosis DAMA Bulanan</h2>
+      <p>Pilih tempoh tarikh untuk semakan kes discaj jenis <strong>Discharge Against Medical Advise (DAMA)</strong>, kemudian export terus ke Excel.</p>
+    </div>
+  </div>
+
+  <section class="card dama-filters">
+    <label>
+      <span>From Date</span>
+      <input type="date" [(ngModel)]="fromDate">
+    </label>
+
+    <label>
+      <span>To Date</span>
+      <input type="date" [(ngModel)]="toDate">
+    </label>
+
+    <div class="actions">
+      <button class="primary" type="button" (click)="generate()" [disabled]="isLoading() || isDownloading()">
+        {{ isLoading() ? 'Generating...' : 'Generate' }}
+      </button>
+      <button class="secondary" type="button" (click)="downloadExcel()" [disabled]="isLoading() || isDownloading()">
+        {{ isDownloading() ? 'Downloading...' : 'Generate Excel' }}
+      </button>
+      <button class="secondary" type="button" (click)="reset()" [disabled]="isLoading() || isDownloading()">Reset</button>
+    </div>
+
+    <div class="report-success" *ngIf="successMessage()">{{ successMessage() }}</div>
+    <div class="report-error" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+  </section>
+
+  <section class="stats-row" *ngIf="reportData() as report">
+    <article class="card stat-card">
+      <span>Total Rekod</span>
+      <strong>{{ report.totalRecords }}</strong>
+    </article>
+    <article class="card stat-card">
+      <span>From</span>
+      <strong>{{ report.fromDate }}</strong>
+    </article>
+    <article class="card stat-card">
+      <span>To</span>
+      <strong>{{ report.toDate }}</strong>
+    </article>
+  </section>
+
+  <section class="card dama-table">
+    <div class="table-header">
+      <h3>Preview Rekod</h3>
+      <p>Preview ini tunjuk kolum penting. Fail Excel akan mengandungi kolum penuh seperti query asal.</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading() && previewRows().length === 0 && !errorMessage()">
+      Tiada rekod dijumpai untuk tempoh dipilih.
+    </div>
+
+    <div class="table-scroll" *ngIf="previewRows().length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>MRN</th>
+            <th>Register</th>
+            <th>Nama</th>
+            <th>Diagnosis</th>
+            <th>Jenis Discaj</th>
+            <th>Wad Discaj</th>
+            <th>Admission</th>
+            <th>Discharge</th>
+            <th>IC Baru</th>
+            <th>Umur</th>
+            <th>Bandar</th>
+            <th>Negeri</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of previewRows()">
+            <td>{{ row.patientMrn }}</td>
+            <td>{{ row.personRegister }}</td>
+            <td>{{ row.personName }}</td>
+            <td>{{ row.diagnosisClinical }}</td>
+            <td>{{ row.dischargeTypeName }}</td>
+            <td>{{ row.dischargeWard }}</td>
+            <td>{{ row.admissionDate }}</td>
+            <td>{{ row.dischargeDate }}</td>
+            <td>{{ row.personNewIc }}</td>
+            <td>{{ row.personAge }}</td>
+            <td>{{ row.personCurCity }}</td>
+            <td>{{ row.personCurState }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

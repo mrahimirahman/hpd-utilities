@@ -1,0 +1,41 @@
+﻿=======================================
+  HPD UTILITIES - WINDOWS SERVER SETUP
+=======================================
+
+SEBELUM RUN SCRIPT:
+-------------------
+1. Download NSSM (https://nssm.cc/download)
+   - Extract nssm.exe (64-bit) ke folder ini: server-package\tools\nssm.exe
+
+2. Download nginx for Windows (https://nginx.org/en/download.html)
+   - Pilih "Stable version" (.zip)
+   - Extract semua content (folder nginx-x.x.x) ke: C:\nginx\
+   - Pastikan C:\nginx\nginx.exe wujud
+
+3. Edit fail hpd-utilities-backend.env
+   - Buka dengan Notepad
+   - Set SPRING_DATASOURCE_PASSWORD (password DB)
+   - Set OPENAI_API_KEY (kalau guna AI assistant)
+   - Simpan
+
+CARA RUN:
+---------
+1. Copy folder server-package\ ke Windows Server (C:\server-package\)
+2. Buka PowerShell sebagai Administrator
+3. Run:
+      Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+      cd C:\server-package
+      .\install-server.ps1
+
+SELEPAS INSTALL:
+----------------
+- App URL  : http://<server-ip>:8081
+- Logs     : C:\hpd-utilities\logs\
+- Services : hpd-backend, hpd-nginx
+
+Check status:
+   Get-Service hpd-backend, hpd-nginx
+
+Restart services:
+   Restart-Service hpd-backend
+   Restart-Service hpd-nginx

@@ -1,0 +1,40 @@
+<button class="assistant-fab" type="button" (click)="toggle()">
+  {{ isOpen() ? 'Close AI' : 'AI Assistant' }}
+</button>
+
+<section class="assistant-panel card" *ngIf="isOpen()">
+  <div class="assistant-header">
+    <div>
+      <h3>AI Assistant</h3>
+      <p>Bantuan read-only untuk report, menu, dan panduan sistem.</p>
+    </div>
+    <span class="assistant-model" *ngIf="modelLabel">{{ modelLabel }}</span>
+  </div>
+
+  <div class="assistant-messages" #messagesPanel>
+    <article class="message" *ngFor="let item of messages()" [class.user]="item.role === 'user'">
+      <span class="message-role">{{ item.role === 'user' ? 'Anda' : 'AI' }}</span>
+      <p>{{ item.content }}</p>
+      <button
+        *ngIf="item.downloadUrl"
+        type="button"
+        class="message-action"
+        (click)="triggerDownload(item.downloadUrl)">
+        {{ item.actionLabel || 'Download' }}
+      </button>
+    </article>
+
+    <div class="message-status" *ngIf="isSending()">AI sedang menjawab...</div>
+  </div>
+
+  <div class="assistant-compose">
+    <textarea
+      [(ngModel)]="draft"
+      rows="3"
+      placeholder="Tanya tentang report, menu, atau langkah deploy..."
+      (keydown)="sendOnEnter($event)"></textarea>
+    <button type="button" class="primary" (click)="send()" [disabled]="isSending() || !draft.trim()">
+      {{ isSending() ? 'Sending...' : 'Send' }}
+    </button>
+  </div>
+</section>

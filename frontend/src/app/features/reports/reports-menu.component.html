@@ -1,0 +1,24 @@
+<section class="reports-menu-shell">
+  <div class="menu-header">
+    <div>
+      <h2>HPD Reports</h2>
+      <p>Pilih modul laporan HPD yang hendak dibuka. PD103 sudah aktif, manakala menu lain disediakan sebagai placeholder untuk pembangunan seterusnya.</p>
+    </div>
+  </div>
+
+  <div class="menu-grid">
+    <article class="menu-card card" *ngFor="let item of reportItems">
+      <div class="card-top">
+        <span class="status-badge" [class.ready]="item.status === 'Ready'">{{ item.status }}</span>
+        <span class="frequency-badge">{{ item.frequency }}</span>
+      </div>
+
+      <h3>{{ item.title }}</h3>
+      <p>{{ item.description }}</p>
+
+      <a class="open-link" [routerLink]="item.route">
+        {{ item.status === 'Ready' ? 'Open module' : 'Open menu' }}
+      </a>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,58 @@
+<div class="login-scene">
+  <div class="left-visual"></div>
+
+  <div class="right-visual">
+    <div class="radar-core">
+      <div class="radar-ring ring-1"></div>
+      <div class="radar-ring ring-2"></div>
+      <div class="radar-ring ring-3"></div>
+      <div class="radar-ring ring-4"></div>
+      <div class="radar-center"></div>
+      <span class="node node-top">+</span>
+      <span class="node node-right">&#9825;</span>
+      <span class="node node-bottom">&#9877;</span>
+      <span class="node node-left">&#10010;</span>
+      <span class="connector connector-top"></span>
+      <span class="connector connector-right"></span>
+      <span class="connector connector-bottom"></span>
+      <span class="connector connector-left"></span>
+    </div>
+    <div class="ecg-line"></div>
+  </div>
+
+  <div class="login-panel">
+    <div class="brand-block">
+      <img class="brand-logo" src="assets/logo_color.svg" alt="HIS KKM logo">
+      <div class="brand-subtitle">HIS&#64;KKM Utilities Workspace</div>
+    </div>
+
+    <form class="login-form" [formGroup]="form" (ngSubmit)="submit()">
+      <label class="field">
+        <span>User ID</span>
+        <input type="text" formControlName="username" placeholder="Enter user id">
+      </label>
+
+      <label class="field">
+        <span>Password</span>
+        <input type="password" formControlName="password" placeholder="Enter password">
+      </label>
+
+      <div class="error-banner" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Signing in...' : 'Login' }}
+        </button>
+      </div>
+
+      <div class="login-note-row">
+        <div class="login-note">
+          Default access: <strong>admin</strong> / <strong>admin123</strong>
+        </div>
+        <span class="ai-pill">With AI Assistant</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+

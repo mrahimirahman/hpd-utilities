@@ -1,0 +1,141 @@
+<div class="report-screen">
+  <div class="report-header">
+    <h2>Inpatient Reports</h2>
+  </div>
+
+  <div class="report-layout">
+    <section class="report-filters card">
+      <div class="filter-row">
+        <label>Report :</label>
+        <select [(ngModel)]="selectedReport">
+          <option>(PD103) Bancian Harian Wad:Pin. 2/2009</option>
+        </select>
+      </div>
+
+      <div class="filter-row ward-row">
+        <label>Ward :</label>
+        <select [(ngModel)]="selectedWardCode" (ngModelChange)="onWardChange()">
+          <option *ngFor="let ward of wards()" [value]="ward.code">{{ ward.name }}</option>
+        </select>
+      </div>
+
+      <div class="filter-row date-row">
+        <label>Start Date:</label>
+        <input type="date" [(ngModel)]="selectedDate">
+        <span class="required">*</span>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="button" (click)="generate()" [disabled]="isLoading() || isSaving()">
+          {{ isLoading() ? 'Generating...' : 'Generate' }}
+        </button>
+        <button class="secondary" type="button" (click)="reset()" [disabled]="isSaving()">Reset</button>
+        <button class="secondary" type="button" (click)="startEdit()" *ngIf="canEditReport()" [disabled]="reportRows().length === 0 || isEditMode() || isSaving()">Edit</button>
+        <button class="secondary" type="button" (click)="saveEdit()" *ngIf="isEditMode()" [disabled]="isSaving()">{{ isSaving() ? 'Saving...' : 'Save' }}</button>
+        <button class="secondary" type="button" (click)="cancelEdit()" *ngIf="isEditMode()" [disabled]="isSaving()">Cancel</button>
+        <button class="secondary print-button" type="button" (click)="printReport()" [disabled]="reportRows().length === 0 || isEditMode()">Print</button>
+      </div>
+
+      <div class="report-success" *ngIf="successMessage()">{{ successMessage() }}</div>
+      <div class="report-error" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+    </section>
+
+    <section class="preview-panel">
+      <div class="preview-label">PDF Viewing</div>
+      <div class="pdf-shell card">
+        <div class="pdf-toolbar">
+          <div class="toolbar-left">
+            <span class="hamburger">&#9776;</span>
+            <span class="doc-title">PD103Servlet2</span>
+          </div>
+          <div class="toolbar-right">
+            <span>1 / 1</span>
+            <span>68%</span>
+            <span>+</span>
+            <span>-</span>
+            <span>&#8942;</span>
+          </div>
+        </div>
+
+        <div class="pdf-body">
+          <div class="report-page">
+            <div class="report-reference">
+              <div>PER-PD103</div>
+              <div>(Pin. 2/2009)</div>
+            </div>
+
+            <div class="page-title-block">
+              <div>SISTEM MAKLUMAT PENGURUSAN KESIHATAN</div>
+              <div>KEMENTERIAN KESIHATAN MALAYSIA</div>
+              <div>BANCIAN HARIAN WAD</div>
+            </div>
+
+            <table class="report-table" *ngIf="rowsForDisplay().length > 0">
+              <thead>
+                <tr class="meta-row">
+                  <th colspan="3" class="meta-left">1. Tarikh: {{ generatedDate | date:'dd/MM/yyyy' }}</th>
+                  <th colspan="3" class="meta-center">2. Jumlah Keseluruhan Dalam Wad</th>
+                  <th [attr.colspan]="visibleDisciplines().length * 2" class="meta-right">3. Pecahan Mengikut Disiplin Dalam Wad</th>
+                </tr>
+                <tr>
+                  <th rowspan="2" class="col-no">Bil</th>
+                  <th rowspan="2" colspan="2" class="col-item-group">Butir-Butir Banci</th>
+                  <th colspan="3">Name/No Wad:<br>{{ generatedWardName || 'UNIT ICU/CCU' }}</th>
+                  <ng-container *ngFor="let discipline of visibleDisciplines(); let i = index; trackBy: trackByIndex">
+                    <th colspan="2">Disiplin {{ i + 1 }}:<br>{{ discipline.name || '' }}</th>
+                  </ng-container>
+                </tr>
+                <tr>
+                  <th>Lelaki</th>
+                  <th>Perempuan</th>
+                  <th>Jumlah</th>
+                  <ng-container *ngFor="let discipline of visibleDisciplines(); let i = index; trackBy: trackByIndex">
+                    <th>Lelaki</th>
+                    <th>Perempuan</th>
+                  </ng-container>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of rowsForDisplay(); let rowIndex = index">
+                  <td>{{ row.no }}</td>
+                  <td *ngIf="shouldRenderItemCell(row)" [attr.rowspan]="itemRowSpan(row)">{{ row.item }}</td>
+                  <td>{{ row.detail || '' }}</td>
+                  <td>{{ row.totalMale }}</td>
+                  <td>{{ row.totalFemale }}</td>
+                  <td>{{ row.total }}</td>
+                  <ng-container *ngFor="let metric of metricsForRow(row); let i = index; trackBy: trackByIndex">
+                    <td>
+                      <input
+                        *ngIf="editableCell(row, visibleDisciplines()[i])"
+                        class="metric-input"
+                        type="number"
+                        min="0"
+                        [ngModel]="metric.male"
+                        (ngModelChange)="updateMetric(rowIndex, i, 'male', $event)">
+                      <ng-container *ngIf="!editableCell(row, visibleDisciplines()[i])">{{ metricDisplayValue(metric, visibleDisciplines()[i], 'male') }}</ng-container>
+                    </td>
+                    <td>
+                      <input
+                        *ngIf="editableCell(row, visibleDisciplines()[i])"
+                        class="metric-input"
+                        type="number"
+                        min="0"
+                        [ngModel]="metric.female"
+                        (ngModelChange)="updateMetric(rowIndex, i, 'female', $event)">
+                      <ng-container *ngIf="!editableCell(row, visibleDisciplines()[i])">{{ metricDisplayValue(metric, visibleDisciplines()[i], 'female') }}</ng-container>
+                    </td>
+                  </ng-container>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="empty-state" *ngIf="!isLoading() && reportRows().length === 0 && !errorMessage()">
+              No report data available for the selected ward and date.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+

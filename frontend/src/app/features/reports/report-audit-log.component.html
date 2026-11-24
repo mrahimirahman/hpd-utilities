@@ -1,0 +1,69 @@
+<section class="audit-shell">
+  <div class="audit-header">
+    <div>
+      <h2>Report Audit Log</h2>
+      <p>Semak perubahan angka PD103 mengikut pengguna, wad, dan tarikh laporan.</p>
+    </div>
+    <div class="audit-badge">ADMIN only</div>
+  </div>
+
+  <div class="audit-filters card">
+    <label>
+      <span>Ward</span>
+      <select [(ngModel)]="selectedWardCode">
+        <option value="">All Wards</option>
+        <option *ngFor="let ward of wards()" [value]="ward.code">{{ ward.name }}</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Report Date</span>
+      <input type="date" [(ngModel)]="selectedDate">
+    </label>
+
+    <div class="audit-actions">
+      <button type="button" class="primary" (click)="loadAuditLog()" [disabled]="isLoading()">Refresh</button>
+      <button type="button" (click)="resetFilters()" [disabled]="isLoading()">Reset</button>
+    </div>
+  </div>
+
+  <div class="audit-error" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+
+  <div class="audit-table card">
+    <div class="audit-status" *ngIf="isLoading()">Loading audit log...</div>
+
+    <table *ngIf="!isLoading() && entries().length > 0">
+      <thead>
+        <tr>
+          <th>Edited At</th>
+          <th>User</th>
+          <th>Ward</th>
+          <th>Report Date</th>
+          <th>Discipline</th>
+          <th>Field</th>
+          <th>Male</th>
+          <th>Female</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let entry of entries()">
+          <td>{{ entry.editedAt }}</td>
+          <td>
+            <strong>{{ entry.editedName || entry.editedBy }}</strong>
+            <small>{{ entry.editedBy }}<span *ngIf="entry.editedRole"> ? {{ entry.editedRole }}</span></small>
+          </td>
+          <td>{{ entry.wardName || entry.wardCode }}</td>
+          <td>{{ entry.reportDate }}</td>
+          <td>{{ entry.disciplineName || entry.disciplineCode }}</td>
+          <td>{{ entry.metricLabel }}</td>
+          <td><span class="delta">{{ entry.previousMale }}</span> ? <strong>{{ entry.newMale }}</strong></td>
+          <td><span class="delta">{{ entry.previousFemale }}</span> ? <strong>{{ entry.newFemale }}</strong></td>
+          <td><button type="button" class="link-button" (click)="openReport(entry)">Open Report</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="audit-status" *ngIf="!isLoading() && entries().length === 0">No audit records found for the current filter.</div>
+  </div>
+</section>

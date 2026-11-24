@@ -1,0 +1,19 @@
+[Unit]
+Description=HPD Utilities Spring Boot Backend
+After=network.target
+
+[Service]
+Type=simple
+User=hpdapp
+Group=hpdapp
+WorkingDirectory=/opt/hpd-utilities
+EnvironmentFile=/etc/hpd-utilities/hpd-utilities-backend.env
+ExecStart=/usr/bin/java -jar /opt/hpd-utilities/maintenance-system-0.0.1-SNAPSHOT.jar --spring.config.additional-location=file:/etc/hpd-utilities/
+SuccessExitStatus=143
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/hpd-utilities/backend.log
+StandardError=append:/var/log/hpd-utilities/backend-error.log
+
+[Install]
+WantedBy=multi-user.target

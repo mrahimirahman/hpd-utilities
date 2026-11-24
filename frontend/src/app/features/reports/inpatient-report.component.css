@@ -1,0 +1,350 @@
+.report-screen {
+  display: grid;
+  gap: 20px;
+}
+
+.report-header {
+  border-bottom: 1px solid #d7dfe6;
+  padding-bottom: 10px;
+}
+
+.report-header h2 {
+  margin: 0;
+  color: #143d69;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.report-layout {
+  display: grid;
+  grid-template-columns: 520px 1fr;
+  gap: 26px;
+  align-items: start;
+}
+
+.report-filters {
+  padding: 20px 18px;
+  box-shadow: none;
+  border-radius: 14px;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.filter-row label {
+  color: #2e3d4d;
+  font-size: 0.95rem;
+}
+
+.filter-row select,
+.filter-row input {
+  height: 42px;
+  border: 1px solid #c6d0db;
+  border-radius: 6px;
+  padding: 0 12px;
+  background: #fff;
+}
+
+.ward-row select {
+  max-width: 206px;
+}
+
+.date-row {
+  grid-template-columns: 74px 170px 20px;
+}
+
+.date-row input {
+  background: #fff8a9;
+}
+
+.required {
+  color: #d64545;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  padding-left: 86px;
+}
+
+.actions button {
+  min-width: 104px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid #1d5ea8;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions .primary,
+.actions .secondary {
+  background: linear-gradient(180deg, #2f87e1, #1b66bc);
+  color: #fff;
+}
+
+.preview-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.preview-label {
+  color: #394653;
+  font-size: 0.95rem;
+}
+
+.pdf-shell {
+  overflow: hidden;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.pdf-toolbar {
+  background: #353535;
+  color: #fff;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 58px;
+}
+
+.toolbar-left,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hamburger {
+  font-size: 1.15rem;
+}
+
+.doc-title {
+  font-weight: 500;
+}
+
+.pdf-body {
+  display: block;
+  min-height: 760px;
+  background: #f2f2f2;
+  padding: 18px;
+  overflow: auto;
+}
+
+.report-page {
+  background: #ffffff;
+  margin: 0 auto;
+  padding: 0;
+  overflow: visible;
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  box-shadow: 0 0 0 1px #cfcfcf;
+}
+
+.report-reference {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  text-align: right;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.page-title-block {
+  text-align: center;
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 1.55;
+  margin: 28px 0 14px;
+}
+
+.report-table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+
+.report-table th,
+.report-table td {
+  border: 1px solid #000000;
+  padding: 3px 4px;
+  vertical-align: middle;
+}
+
+.report-table th {
+  font-weight: 700;
+  text-align: center;
+}
+
+.meta-row th {
+  border: none;
+  padding: 0 6px 8px;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.meta-left {
+  text-align: left !important;
+}
+
+.meta-center,
+.meta-right {
+  text-align: center !important;
+}
+
+.report-table td:nth-child(1),
+.report-table td:nth-child(n+4) {
+  text-align: center;
+}
+
+.col-no {
+  width: 42px;
+}
+
+.col-item {
+  width: 250px;
+}
+
+.col-detail {
+  width: 180px;
+}
+
+.col-item-group {
+  width: 430px;
+}
+
+@media (max-width: 1400px) {
+  .report-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .date-row {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    padding-left: 0;
+    flex-wrap: wrap;
+  }
+}
+
+
+.report-success {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #edf9f0;
+  color: #1d6f38;
+  border: 1px solid #b8e0c1;
+}
+
+.metric-input {
+  width: 100%;
+  min-width: 28px;
+  border: 1px solid #7aa6d8;
+  background: #fffdf0;
+  text-align: center;
+  font-size: 9px;
+  padding: 1px 2px;
+  height: 20px;
+}
+
+.metric-input:focus {
+  outline: 1px solid #2f87e1;
+  border-color: #2f87e1;
+}
+
+.report-error {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fff1f1;
+  color: #b33030;
+  border: 1px solid #f0c1c1;
+}
+
+.empty-state {
+  padding: 28px 16px;
+  color: #5f6e7d;
+  text-align: center;
+}
+
+
+
+@media print {
+  .report-header,
+  .report-filters,
+  .preview-label,
+  .pdf-toolbar,
+  .actions,
+  .report-error,
+  .report-success,
+  .empty-state {
+    display: none !important;
+  }
+
+  .report-screen,
+  .report-layout,
+  .preview-panel,
+  .pdf-shell,
+  .pdf-body {
+    display: block !important;
+    gap: 0 !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .report-page {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  .page-title-block {
+    margin: 10px 0 14px;
+  }
+
+  .report-reference {
+    top: 0;
+    right: 4px;
+    font-size: 10px;
+  }
+
+
+  .report-table {
+    min-width: 0 !important;
+    width: 100% !important;
+    font-size: 9px;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 3px 4px;
+    border: 1px solid #000000;
+  }
+
+  .metric-input {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    height: auto !important;
+  }
+}

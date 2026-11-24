@@ -1,0 +1,60 @@
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-main">
+      <section class="sidebar-card sidebar-brand-card">
+        <div class="brand">
+          <span class="brand-mark">HK</span>
+          <div>
+            <strong>HIS&#64;KKM Utilities</strong>
+            <small>Utilities Portal</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="sidebar-card sidebar-menu-card">
+        <div class="sidebar-label">Navigation</div>
+        <nav class="menu">
+          <a *ngFor="let item of visibleMenuItems()"
+             [routerLink]="item.route"
+             routerLinkActive="active">
+            <span class="menu-icon" aria-hidden="true">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </a>
+        </nav>
+      </section>
+    </div>
+
+    <div class="sidebar-footer">
+      <section class="sidebar-card date-card">
+        <strong>{{ currentDateLabel }}</strong>
+        <span>{{ currentHijriLabel }}</span>
+      </section>
+
+      <section class="sidebar-card user-panel">
+        <div class="sidebar-label">Signed In</div>
+        <div class="user-details">
+          <strong>{{ authService.currentUser()?.fullName }}</strong>
+          <span>{{ authService.currentUser()?.department }}</span>
+        </div>
+        <button type="button" (click)="logout()">Logout</button>
+      </section>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="portal-header">
+      <div class="portal-header__logos">
+        <img class="portal-header__badge" src="assets/jata.png" alt="Jata Malaysia">
+        <img class="portal-header__badge" src="assets/logo.png" alt="Hospital logo">
+        <img class="portal-header__wordmark" src="assets/logokkm.png" alt="HIS at KKM logo">
+      </div>
+      <div class="portal-header__text">
+        <strong>Hospital Port Dickson</strong>
+        <span>Unit Teknologi Maklumat</span>
+      </div>
+    </header>
+
+    <router-outlet></router-outlet>
+    <app-ai-assistant *ngIf="canUseAiAssistant()"></app-ai-assistant>
+  </main>
+</div>
