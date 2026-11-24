@@ -15,6 +15,7 @@ export class DashboardLayoutComponent {
   readonly menuItems = [
     { label: 'HPD Reports', route: '/reports', icon: 'HP' },
     { label: 'Update Discharge Time', route: '/discharge-date', icon: 'DD' },
+    { label: 'Update Death Date', route: '/death-date', icon: 'DT' },
     { label: 'Audit Log', route: '/reports/audit', icon: 'AL', requiresAdmin: true }
   ];
 

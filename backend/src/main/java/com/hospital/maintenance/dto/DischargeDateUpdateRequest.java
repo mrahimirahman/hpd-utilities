@@ -2,6 +2,8 @@ package com.hospital.maintenance.dto;
 
 public class DischargeDateUpdateRequest {
 
+    private String mode;
+    private String deathDate;
     private String encounterId;
     private String dischargeDate;
     private String preDischargeDate;
@@ -46,5 +48,21 @@ public class DischargeDateUpdateRequest {
 
     public void setReason(String reason) {
         this.reason = reason;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
+    public String getDeathDate() {
+        return deathDate;
+    }
+
+    public void setDeathDate(String deathDate) {
+        this.deathDate = deathDate;
     }
 }

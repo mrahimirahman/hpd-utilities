@@ -27,12 +27,14 @@ public class DischargeDateController {
     }
 
     @GetMapping("/encounters")
-    public ResponseEntity<?> search(@RequestParam("mrn") String mrn, HttpSession session) {
+    public ResponseEntity<?> search(@RequestParam("mrn") String mrn,
+                                    @RequestParam(value = "mode", required = false) String mode,
+                                    HttpSession session) {
         if (session.getAttribute(AuthService.SESSION_USER_KEY) == null) {
             return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
         }
         try {
-            return ResponseEntity.ok(dischargeDateService.search(mrn));
+            return ResponseEntity.ok(dischargeDateService.search(mrn, mode));
         } catch (IllegalArgumentException ex) {
             return badRequest(ex);
         }

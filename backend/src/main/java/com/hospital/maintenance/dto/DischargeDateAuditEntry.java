@@ -2,6 +2,9 @@ package com.hospital.maintenance.dto;
 
 public class DischargeDateAuditEntry {
 
+    private String module;
+    private String deathDateBefore;
+    private String deathDateAfter;
     private Long id;
     private String encounterId;
     private String admissionId;
@@ -154,5 +157,29 @@ public class DischargeDateAuditEntry {
 
     public void setEditedAt(String editedAt) {
         this.editedAt = editedAt;
+    }
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
+    }
+
+    public String getDeathDateBefore() {
+        return deathDateBefore;
+    }
+
+    public void setDeathDateBefore(String deathDateBefore) {
+        this.deathDateBefore = deathDateBefore;
+    }
+
+    public String getDeathDateAfter() {
+        return deathDateAfter;
+    }
+
+    public void setDeathDateAfter(String deathDateAfter) {
+        this.deathDateAfter = deathDateAfter;
     }
 }

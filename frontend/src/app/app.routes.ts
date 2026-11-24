@@ -91,7 +91,8 @@ export const appRoutes: Routes = [
         }
       },
       { path: 'reports/audit', component: ReportAuditLogComponent },
-      { path: 'discharge-date', component: DischargeDateComponent }
+      { path: 'discharge-date', component: DischargeDateComponent },
+      { path: 'death-date', component: DischargeDateComponent, data: { mode: 'DEATH' } }
     ]
   },
   { path: '**', redirectTo: '' }

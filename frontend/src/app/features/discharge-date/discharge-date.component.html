@@ -1,7 +1,8 @@
 <section class="discharge-shell">
   <div class="discharge-header">
-    <h2>Update Discharge Time</h2>
-    <p>Pembetulan tarikh discaj pesakit (Borang Aduan HIS&#64;KKM). Cari pesakit melalui MRN, pilih encounter, kemudian kemaskini tarikh discaj. Setiap perubahan direkod dalam audit trail.</p>
+    <h2>{{ deathMode ? 'Update Death Date' : 'Update Discharge Time' }}</h2>
+    <p *ngIf="!deathMode">Pembetulan tarikh discaj pesakit (Borang Aduan HIS&#64;KKM). Cari pesakit melalui MRN, pilih encounter, kemudian kemaskini tarikh discaj. Setiap perubahan direkod dalam audit trail.</p>
+    <p *ngIf="deathMode">Pembetulan tarikh &amp; masa kematian pesakit (rekod dengan death_date). Cari pesakit melalui MRN, pilih encounter, kemudian kemaskini tarikh kematian dan tarikh discaj. Setiap perubahan direkod dalam audit trail.</p>
   </div>
 
   <section class="card discharge-search">
@@ -25,12 +26,12 @@
 
   <section class="card discharge-table" *ngIf="hasSearched()">
     <div class="table-header">
-      <h3>Rekod Admission (IN)</h3>
+      <h3>{{ deathMode ? 'Rekod Admission (IN) - Ada Tarikh Kematian' : 'Rekod Admission (IN)' }}</h3>
       <p>Pilih rekod yang hendak dibetulkan.</p>
     </div>
 
     <div class="empty-state" *ngIf="!isSearching() && rows().length === 0 && !errorMessage()">
-      Tiada rekod admission dijumpai untuk MRN ini.
+      {{ deathMode ? 'Tiada rekod dengan tarikh kematian dijumpai untuk MRN ini.' : 'Tiada rekod admission dijumpai untuk MRN ini.' }}
     </div>
 
     <div class="table-scroll" *ngIf="rows().length > 0">
@@ -43,6 +44,7 @@
             <th>Encounter ID</th>
             <th>Tarikh Encounter</th>
             <th>Wad Discaj</th>
+            <th *ngIf="deathMode">Death Date</th>
             <th>Discharge (encounters)</th>
             <th>Discharge (enc_discharges)</th>
             <th>Pre Discharge Date</th>
@@ -58,6 +60,7 @@
             <td>{{ row.encounterId }}</td>
             <td>{{ fmt(row.encounterDate) }}</td>
             <td>{{ row.dischargeWardName || row.dischargeWard }} <small class="code" *ngIf="row.dischargeWardName">({{ row.dischargeWard }})</small></td>
+            <td *ngIf="deathMode">{{ fmt(row.deathDate) }}</td>
             <td>{{ fmt(row.encounterDischargeDate) }}</td>
             <td>{{ fmt(row.encDischargeDate) }}</td>
             <td>{{ fmt(row.preDischargeDate) }}</td>
@@ -73,11 +76,17 @@
 
   <section class="card discharge-edit" *ngIf="selected() as row">
     <div class="table-header">
-      <h3>Kemaskini Tarikh Discaj</h3>
+      <h3>{{ deathMode ? 'Kemaskini Tarikh Kematian' : 'Kemaskini Tarikh Discaj' }}</h3>
       <p>{{ row.patientMrn }} &middot; {{ row.personName }} &middot; Encounter {{ row.encounterId }} &middot; Admission {{ fmt(row.encounterDate) }}</p>
     </div>
 
     <div class="edit-grid">
+      <label class="death" *ngIf="deathMode">
+        <span>Death Date &amp; Time</span>
+        <input type="datetime-local" [(ngModel)]="deathDate">
+        <small>Semasa: enc_discharges.death_date {{ fmt(row.deathDate) }}</small>
+      </label>
+
       <label>
         <span>Discharge Date &amp; Time</span>
         <input type="datetime-local" [(ngModel)]="dischargeDate">
@@ -126,6 +135,7 @@
           <tr>
             <th>Tarikh Kemaskini</th>
             <th>Oleh</th>
+            <th *ngIf="deathMode">Death Date</th>
             <th>Discharge (encounters)</th>
             <th>Discharge (enc_discharges)</th>
             <th>Pre Discharge Date</th>
@@ -137,6 +147,7 @@
           <tr *ngFor="let entry of auditEntries()">
             <td>{{ fmt(entry.editedAt) }}</td>
             <td>{{ entry.editedName || entry.editedBy }}</td>
+            <td *ngIf="deathMode">{{ fmt(entry.deathDateBefore) }} &rarr; {{ fmt(entry.deathDateAfter) }}</td>
             <td>{{ fmt(entry.encounterDischargeDateBefore) }} &rarr; {{ fmt(entry.encounterDischargeDateAfter) }}</td>
             <td>{{ fmt(entry.encDischargeDateBefore) }} &rarr; {{ fmt(entry.encDischargeDateAfter) }}</td>
             <td>{{ fmt(entry.preDischargeDateBefore) }} &rarr; {{ fmt(entry.preDischargeDateAfter) }}</td>

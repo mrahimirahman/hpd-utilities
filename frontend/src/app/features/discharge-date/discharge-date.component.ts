@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 import { API_BASE_URL } from '../../core/api.config';
 
 interface DischargeEncounterRow {
@@ -17,10 +18,13 @@ interface DischargeEncounterRow {
   encDischargeDate: string | null;
   preDischargeDate: string | null;
   preDischargeTime: string | null;
+  deathDate: string | null;
+  dischargeTypeCode: string | null;
 }
 
 interface DischargeDateAuditEntry {
   id: number;
+  module: string | null;
   encounterId: string;
   patientMrn: string;
   encounterDischargeDateBefore: string | null;
@@ -31,6 +35,8 @@ interface DischargeDateAuditEntry {
   preDischargeDateAfter: string | null;
   preDischargeTimeBefore: string | null;
   preDischargeTimeAfter: string | null;
+  deathDateBefore: string | null;
+  deathDateAfter: string | null;
   reason: string | null;
   editedBy: string;
   editedName: string;
@@ -44,7 +50,10 @@ interface DischargeDateAuditEntry {
   templateUrl: './discharge-date.component.html',
   styleUrl: './discharge-date.component.css'
 })
+// Serves both "Update Discharge Time" and "Update Death Date"; route data { mode: 'DEATH' }
+// limits the search to discharges with a death_date and adds the enc_discharges.death_date field.
 export class DischargeDateComponent {
+  readonly deathMode: boolean;
   readonly rows = signal<DischargeEncounterRow[]>([]);
   readonly selected = signal<DischargeEncounterRow | null>(null);
   readonly auditEntries = signal<DischargeDateAuditEntry[]>([]);
@@ -58,9 +67,12 @@ export class DischargeDateComponent {
   dischargeDate = '';
   preDischargeDate = '';
   preDischargeTime = '';
+  deathDate = '';
   reason = '';
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient, route: ActivatedRoute) {
+    this.deathMode = route.snapshot.data['mode'] === 'DEATH';
+  }
 
   search(): void {
     const mrn = this.mrn.trim();
@@ -75,7 +87,7 @@ export class DischargeDateComponent {
     this.selected.set(null);
     this.auditEntries.set([]);
 
-    const params = new HttpParams().set('mrn', mrn);
+    const params = new HttpParams().set('mrn', mrn).set('mode', this.deathMode ? 'DEATH' : 'DISCHARGE');
     this.http.get<DischargeEncounterRow[]>(`${API_BASE_URL}/discharge-date/encounters`, { params }).subscribe({
       next: (rows) => {
         this.rows.set(rows);
@@ -99,6 +111,7 @@ export class DischargeDateComponent {
       || (row.encDischargeDate ? `${this.datePart(row.encDischargeDate)}T00:00` : '');
     this.preDischargeDate = this.datePart(row.preDischargeDate);
     this.preDischargeTime = (row.preDischargeTime ?? '').slice(0, 5);
+    this.deathDate = this.dateTimeLocal(row.deathDate);
     this.reason = '';
     this.loadAudit(row.encounterId);
   }
@@ -117,7 +130,12 @@ export class DischargeDateComponent {
       this.errorMessage.set('Sila lengkapkan Discharge Date & Time, Pre Discharge Date dan Pre Discharge Time.');
       return;
     }
-    if (!window.confirm(`Kemaskini tarikh discaj untuk ${row.patientMrn} (encounter ${row.encounterId})?`)) {
+    if (this.deathMode && !this.deathDate) {
+      this.errorMessage.set('Sila lengkapkan Death Date & Time.');
+      return;
+    }
+    const label = this.deathMode ? 'tarikh kematian' : 'tarikh discaj';
+    if (!window.confirm(`Kemaskini ${label} untuk ${row.patientMrn} (encounter ${row.encounterId})?`)) {
       return;
     }
 
@@ -130,6 +148,8 @@ export class DischargeDateComponent {
       dischargeDate: this.dischargeDate,
       preDischargeDate: this.preDischargeDate,
       preDischargeTime: this.preDischargeTime,
+      mode: this.deathMode ? 'DEATH' : 'DISCHARGE',
+      deathDate: this.deathMode ? this.deathDate : null,
       reason: this.reason
     }).subscribe({
       next: (updated) => {
@@ -138,7 +158,7 @@ export class DischargeDateComponent {
         this.selected.set(merged);
         this.reason = '';
         this.isSaving.set(false);
-        this.successMessage.set('Tarikh discaj berjaya dikemaskini.');
+        this.successMessage.set(this.deathMode ? 'Tarikh kematian berjaya dikemaskini.' : 'Tarikh discaj berjaya dikemaskini.');
         this.loadAudit(merged.encounterId);
       },
       error: (error) => {

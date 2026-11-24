@@ -2,6 +2,8 @@ package com.hospital.maintenance.dto;
 
 public class DischargeEncounterRow {
 
+    private String deathDate;
+    private String dischargeTypeCode;
     private String encounterId;
     private String admissionId;
     private String patientMrn;
@@ -109,5 +111,21 @@ public class DischargeEncounterRow {
 
     public void setPreDischargeTime(String preDischargeTime) {
         this.preDischargeTime = preDischargeTime;
+    }
+
+    public String getDeathDate() {
+        return deathDate;
+    }
+
+    public void setDeathDate(String deathDate) {
+        this.deathDate = deathDate;
+    }
+
+    public String getDischargeTypeCode() {
+        return dischargeTypeCode;
+    }
+
+    public void setDischargeTypeCode(String dischargeTypeCode) {
+        this.dischargeTypeCode = dischargeTypeCode;
     }
 }
