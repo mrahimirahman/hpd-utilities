@@ -14,6 +14,7 @@ import { AuthService } from '../../core/auth.service';
 export class LoginComponent {
   readonly errorMessage = signal('');
   readonly isSubmitting = signal(false);
+  readonly showPassword = signal(false);
   readonly form;
 
   constructor(
@@ -25,6 +26,10 @@ export class LoginComponent {
       username: ['admin', Validators.required],
       password: ['admin123', Validators.required]
     });
+  }
+
+  togglePassword(): void {
+    this.showPassword.update((show) => !show);
   }
 
   submit(): void {

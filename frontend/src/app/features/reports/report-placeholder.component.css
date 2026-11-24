@@ -1,69 +1,30 @@
-.placeholder-shell {
-  display: grid;
-  gap: 24px;
-}
-
-.placeholder-header {
+.status-body {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
-.placeholder-header h2 {
-  margin: 0 0 8px;
+.icon-tile.pending {
+  background: var(--warning-bg);
+  color: var(--warning-ink);
 }
 
-.placeholder-header p {
-  margin: 0;
-  max-width: 760px;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-.placeholder-badge {
-  padding: 12px 16px;
-  border-radius: 999px;
-  background: rgba(176, 124, 16, 0.14);
-  color: #9b6500;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.placeholder-card {
-  padding: 24px;
-  display: grid;
-  gap: 16px;
-}
-
-.placeholder-card h3,
-.placeholder-card p {
-  margin: 0;
-}
-
-.placeholder-actions {
+.status-text {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 8px;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.primary-link,
-.secondary-link {
-  text-decoration: none;
-  font-weight: 700;
+.status-text p {
+  color: var(--text-soft);
 }
 
-.primary-link {
-  color: var(--primary-dark);
+.actions {
+  justify-content: flex-start;
 }
 
-.secondary-link {
-  color: #7a5b1a;
-}
-
-@media (max-width: 960px) {
-  .placeholder-header {
-    flex-direction: column;
+@media (max-width: 640px) {
+  .actions .btn {
+    width: 100%;
   }
 }

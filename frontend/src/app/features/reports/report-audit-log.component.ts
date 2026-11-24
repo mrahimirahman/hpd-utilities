@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -43,6 +43,11 @@ export class ReportAuditLogComponent implements OnInit {
   readonly entries = signal<ReportAuditLogEntry[]>([]);
   readonly isLoading = signal(false);
   readonly errorMessage = signal('');
+
+  /** Summary figures derived from the currently loaded entries only. */
+  readonly uniqueUserCount = computed(() => new Set(this.entries().map((e) => e.editedBy)).size);
+  readonly uniqueWardCount = computed(() => new Set(this.entries().map((e) => e.wardCode)).size);
+  readonly uniqueReportDateCount = computed(() => new Set(this.entries().map((e) => e.reportDate)).size);
 
   selectedWardCode = '';
   selectedDate = '';

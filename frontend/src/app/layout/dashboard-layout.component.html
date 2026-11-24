@@ -1,60 +1,121 @@
-<div class="shell">
-  <aside class="sidebar">
-    <div class="sidebar-main">
-      <section class="sidebar-card sidebar-brand-card">
-        <div class="brand">
-          <span class="brand-mark">HK</span>
-          <div>
-            <strong>HIS&#64;KKM Utilities</strong>
-            <small>Utilities Portal</small>
-          </div>
+<div class="shell" [class.drawer-open]="drawerOpen()">
+  <aside class="sidebar" id="app-sidebar" aria-label="Menu utama">
+    <div class="sidebar-top">
+      <div class="brand">
+        <span class="brand-mark"><span class="material-symbols-outlined">local_hospital</span></span>
+        <div class="brand-text">
+          <strong>HPD Utilities</strong>
+          <small>HIS&#64;KKM Utilities Portal</small>
         </div>
-      </section>
+        <button type="button" class="drawer-close" (click)="closeDrawer()" aria-label="Tutup menu">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
 
-      <section class="sidebar-card sidebar-menu-card">
-        <div class="sidebar-label">Navigation</div>
-        <nav class="menu">
-          <a *ngFor="let item of visibleMenuItems()"
-             [routerLink]="item.route"
-             routerLinkActive="active">
-            <span class="menu-icon" aria-hidden="true">{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
-          </a>
-        </nav>
-      </section>
+      <div class="unit-strip">
+        <span class="unit-dot"></span>
+        <span>Unit Teknologi Maklumat, HPD</span>
+      </div>
+
+      <nav class="menu">
+        <a *ngFor="let item of visibleMenuItems()"
+           [routerLink]="item.route"
+           [class.active]="isActive(item)"
+           [attr.aria-current]="isActive(item) ? 'page' : null">
+          <span class="material-symbols-outlined">{{ item.icon }}</span>
+          <span class="menu-label">{{ item.label }}</span>
+          <span class="menu-tag" *ngIf="item.requiresAdmin">Admin</span>
+          <span class="material-symbols-outlined menu-chevron" *ngIf="!item.requiresAdmin">chevron_right</span>
+        </a>
+      </nav>
     </div>
 
     <div class="sidebar-footer">
-      <section class="sidebar-card date-card">
-        <strong>{{ currentDateLabel }}</strong>
+      <div class="date-card">
+        <span class="date-card__label">
+          <span class="material-symbols-outlined icon-sm">calendar_today</span>
+          Kalendar Bertugas
+        </span>
+        <strong class="tnum">{{ currentDateLabel }}</strong>
         <span>{{ currentHijriLabel }}</span>
-      </section>
+      </div>
 
-      <section class="sidebar-card user-panel">
-        <div class="sidebar-label">Signed In</div>
-        <div class="user-details">
+      <div class="user-row">
+        <span class="avatar">{{ initials() }}</span>
+        <div class="user-row__text">
           <strong>{{ authService.currentUser()?.fullName }}</strong>
           <span>{{ authService.currentUser()?.department }}</span>
         </div>
-        <button type="button" (click)="logout()">Logout</button>
-      </section>
+      </div>
+
+      <button type="button" class="logout" (click)="logout()">
+        <span class="material-symbols-outlined">logout</span>
+        Log Keluar
+      </button>
     </div>
   </aside>
 
-  <main class="content">
-    <header class="portal-header">
-      <div class="portal-header__logos">
-        <img class="portal-header__badge" src="assets/jata.png" alt="Jata Malaysia">
-        <img class="portal-header__badge" src="assets/logo.png" alt="Hospital logo">
-        <img class="portal-header__wordmark" src="assets/logokkm.png" alt="HIS at KKM logo">
+  <div class="scrim" (click)="closeDrawer()" aria-hidden="true"></div>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button type="button" class="menu-toggle" (click)="toggleDrawer()"
+                aria-label="Buka menu" aria-controls="app-sidebar" [attr.aria-expanded]="drawerOpen()">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="topbar-logos">
+          <img src="assets/jata.png" alt="Jata Malaysia">
+          <img src="assets/logokkm.png" alt="Logo KKM">
+        </div>
+        <div class="topbar-trail">
+          <span class="topbar-org">Hospital Port Dickson</span>
+          <span class="topbar-section">
+            <span class="hide-sm">HIS&#64;KKM Utiliti</span>
+            <ng-container *ngIf="currentSection()">
+              <span class="sep hide-sm">/</span>
+              <strong>{{ currentSection() }}</strong>
+            </ng-container>
+          </span>
+        </div>
       </div>
-      <div class="portal-header__text">
-        <strong>Hospital Port Dickson</strong>
-        <span>Unit Teknologi Maklumat</span>
+
+      <div class="topbar-right">
+        <span class="role-pill" *ngIf="authService.currentUser()?.role as role">
+          <span class="material-symbols-outlined icon-sm">shield_person</span>
+          {{ role }}
+        </span>
+        <div class="topbar-user">
+          <span class="avatar avatar-light">{{ initials() }}</span>
+          <div class="topbar-user__text">
+            <strong>{{ authService.currentUser()?.fullName }}</strong>
+            <span>{{ authService.currentUser()?.username }}</span>
+          </div>
+        </div>
       </div>
     </header>
 
-    <router-outlet></router-outlet>
-    <app-ai-assistant *ngIf="canUseAiAssistant()"></app-ai-assistant>
-  </main>
+    <main class="content">
+      <router-outlet></router-outlet>
+
+      <footer class="app-footer no-print">
+        <span>
+          <span class="material-symbols-outlined icon-sm">security</span>
+          Unit Teknologi Maklumat, Hospital Port Dickson
+        </span>
+        <span>Zon Waktu: Asia/Kuala_Lumpur (MYT)</span>
+      </footer>
+    </main>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Navigasi pantas">
+    <a *ngFor="let item of visibleMenuItems()"
+       [routerLink]="item.route"
+       [class.active]="isActive(item)">
+      <span class="material-symbols-outlined">{{ item.icon }}</span>
+      <span>{{ item.shortLabel }}</span>
+    </a>
+  </nav>
+
+  <app-ai-assistant *ngIf="canUseAiAssistant()"></app-ai-assistant>
 </div>

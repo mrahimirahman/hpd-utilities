@@ -260,6 +260,15 @@ export class InpatientReportComponent implements OnInit {
     this.draftRows.set(rows);
   }
 
+  isCellChanged(rowIndex: number, metricIndex: number, gender: 'male' | 'female'): boolean {
+    if (!this.isEditMode()) {
+      return false;
+    }
+    const draftMetric = this.draftRows()[rowIndex]?.disciplineMetrics[metricIndex];
+    const currentMetric = this.reportRows()[rowIndex]?.disciplineMetrics[metricIndex];
+    return !!draftMetric && !!currentMetric && draftMetric[gender] !== currentMetric[gender];
+  }
+
   shouldRenderItemCell(row: ReportRow): boolean {
     return row.no !== '6' && row.no !== '7'
       && row.no !== '12' && row.no !== '13' && row.no !== '14' && row.no !== '15'

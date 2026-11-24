@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -17,6 +17,12 @@ interface DamaDiagnosisRow {
   personAge: string;
   personCurCity: string;
   personCurState: string;
+}
+
+interface CountEntry {
+  label: string;
+  count: number;
+  percent: number;
 }
 
 interface DamaDiagnosisReportResponse {
@@ -42,6 +48,14 @@ export class DamaDiagnosisReportComponent implements OnInit {
 
   fromDate = this.firstDayOfMonth();
   toDate = this.lastDayOfMonth();
+
+  /** Ward breakdown computed from the loaded rows (descending by count). */
+  readonly wardBreakdown = computed(() => this.countBy((row) => row.dischargeWard));
+
+  /** Top clinical diagnoses computed from the loaded rows. */
+  readonly topDiagnoses = computed(() => this.countBy((row) => row.diagnosisClinical).slice(0, 5));
+
+  readonly topWard = computed<CountEntry | null>(() => this.wardBreakdown()[0] ?? null);
 
   constructor(private readonly http: HttpClient) {}
 
@@ -129,6 +143,21 @@ export class DamaDiagnosisReportComponent implements OnInit {
 
   previewRows(): DamaDiagnosisRow[] {
     return this.reportData()?.rows ?? [];
+  }
+
+  private countBy(pick: (row: DamaDiagnosisRow) => string): CountEntry[] {
+    const rows = this.previewRows();
+    if (rows.length === 0) {
+      return [];
+    }
+    const counts = new Map<string, number>();
+    for (const row of rows) {
+      const key = (pick(row) ?? '').trim() || 'Tidak dinyatakan';
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .map(([label, count]) => ({ label, count, percent: Math.round((count / rows.length) * 1000) / 10 }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
   }
 
   private validateDates(): boolean {
