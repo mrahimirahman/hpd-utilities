@@ -8,6 +8,7 @@ public class DischargeEncounterRow {
     private String personName;
     private String personNewIc;
     private String dischargeWard;
+    private String dischargeWardName;
     private String encounterDate;
     private String encounterDischargeDate;
     private String encDischargeDate;
@@ -60,6 +61,14 @@ public class DischargeEncounterRow {
 
     public void setDischargeWard(String dischargeWard) {
         this.dischargeWard = dischargeWard;
+    }
+
+    public String getDischargeWardName() {
+        return dischargeWardName;
+    }
+
+    public void setDischargeWardName(String dischargeWardName) {
+        this.dischargeWardName = dischargeWardName;
     }
 
     public String getEncounterDate() {

@@ -14,6 +14,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +32,22 @@ public class DischargeDateService {
     private static final String MRN_PREFIX = "HPD";
     private static final Pattern TIME_PATTERN = Pattern.compile("^([01]\\d|2[0-3]):[0-5]\\d$");
 
-    // Column types in his_kkm are not app-owned, so values are read via DATE_FORMAT and
-    // written via STR_TO_DATE. TIMESTAMP(new date, old time) keeps any existing time-of-day
-    // when the column is DATETIME, and is truncated to the date when the column is DATE.
     private static final String SNAPSHOT_COLUMNS = "e.encounter_id, m.admission_id, a.patient_mrn, e.discharge_ward, "
-            + "DATE_FORMAT(e.encounter_date, '%Y-%m-%d %H:%i:%s') AS encounter_date, "
+            + "rl.location_name AS discharge_ward_name, "
+            + "DATE_FORMAT(e.encounter_timestamp, '%Y-%m-%d %H:%i:%s') AS encounter_date, "
             + "DATE_FORMAT(e.discharge_date, '%Y-%m-%d %H:%i:%s') AS encounter_discharge_date, "
-            + "DATE_FORMAT(d.discharge_date, '%Y-%m-%d %H:%i:%s') AS enc_discharge_date, "
+            + "DATE_FORMAT(d.discharge_date, '%Y-%m-%d') AS enc_discharge_date, "
             + "DATE_FORMAT(m.pre_discharge_date, '%Y-%m-%d') AS pre_discharge_date, "
             + "m.pre_discharge_time ";
+
+    // An encounter has one enc_admissions row per ward transfer (latest = current ward, the one
+    // that carries pre-discharge), and enc_discharges occasionally holds duplicate copies of the
+    // same discharge. Join only the latest of each so every encounter appears once.
+    private static final String ADMISSION_DISCHARGE_JOINS = "INNER JOIN enc_admissions m ON m.admission_id = "
+            + "(SELECT MAX(m2.admission_id) FROM enc_admissions m2 WHERE m2.encounter_id = e.encounter_id) "
+            + "LEFT JOIN enc_discharges d ON d.discharge_id = "
+            + "(SELECT MAX(d2.discharge_id) FROM enc_discharges d2 WHERE d2.encounter_id = e.encounter_id) "
+            + "LEFT JOIN ref_locations rl ON rl.location_code = e.discharge_ward ";
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private volatile boolean auditTableInitialized;
@@ -54,11 +63,10 @@ public class DischargeDateService {
                 + "FROM persons b "
                 + "INNER JOIN patients a ON a.person_id = b.person_id "
                 + "INNER JOIN encounters e ON e.patient_id = a.patient_id "
-                + "INNER JOIN enc_admissions m ON m.encounter_id = e.encounter_id "
-                + "LEFT JOIN enc_discharges d ON d.encounter_id = e.encounter_id "
+                + ADMISSION_DISCHARGE_JOINS
                 + "WHERE a.patient_mrn IN (:mrns) "
                 + "AND e.domain_code = 'IN' "
-                + "ORDER BY e.encounter_date";
+                + "ORDER BY e.encounter_timestamp";
 
         return namedParameterJdbcTemplate.query(sql, new MapSqlParameterSource("mrns", candidates), new RowMapper<DischargeEncounterRow>() {
             @Override
@@ -76,7 +84,7 @@ public class DischargeDateService {
         if (request == null || isBlank(request.getEncounterId())) {
             throw new IllegalArgumentException("Sila pilih rekod encounter.");
         }
-        String dischargeDate = requireDate(request.getDischargeDate(), "Discharge Date");
+        String dischargeDateTime = requireDateTime(request.getDischargeDate(), "Discharge Date");
         String preDischargeDate = requireDate(request.getPreDischargeDate(), "Pre Discharge Date");
         String preDischargeTime = request.getPreDischargeTime() == null ? "" : request.getPreDischargeTime().trim();
         if (!TIME_PATTERN.matcher(preDischargeTime).matches()) {
@@ -90,28 +98,31 @@ public class DischargeDateService {
         if (before == null) {
             throw new IllegalArgumentException("Rekod encounter IN tidak dijumpai.");
         }
-        if (before.getEncounterDate() != null && dischargeDate.compareTo(before.getEncounterDate().substring(0, 10)) < 0) {
-            throw new IllegalArgumentException("Discharge Date tidak boleh lebih awal daripada tarikh admission (" + before.getEncounterDate().substring(0, 10) + ").");
+        if (before.getEncounterDate() != null && dischargeDateTime.compareTo(before.getEncounterDate()) < 0) {
+            throw new IllegalArgumentException("Discharge Date tidak boleh lebih awal daripada masa admission (" + before.getEncounterDate() + ").");
         }
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("encounterId", encounterId)
-                .addValue("dischargeDate", dischargeDate)
+                .addValue("admissionId", before.getAdmissionId())
+                .addValue("dischargeDateTime", dischargeDateTime)
                 .addValue("preDischargeDate", preDischargeDate)
                 .addValue("preDischargeTime", preDischargeTime);
 
+        // encounters.discharge_date is DATETIME; enc_discharges.discharge_date and
+        // enc_admissions.pre_discharge_date are DATE; pre_discharge_time is VARCHAR(5) 'HH:mm'.
         namedParameterJdbcTemplate.update("UPDATE encounters "
-                + "SET discharge_date = TIMESTAMP(STR_TO_DATE(:dischargeDate, '%Y-%m-%d'), IFNULL(TIME(discharge_date), '00:00:00')) "
+                + "SET discharge_date = STR_TO_DATE(:dischargeDateTime, '%Y-%m-%d %H:%i:%s') "
                 + "WHERE encounter_id = :encounterId", params);
 
         namedParameterJdbcTemplate.update("UPDATE enc_discharges "
-                + "SET discharge_date = TIMESTAMP(STR_TO_DATE(:dischargeDate, '%Y-%m-%d'), IFNULL(TIME(discharge_date), '00:00:00')) "
+                + "SET discharge_date = DATE(STR_TO_DATE(:dischargeDateTime, '%Y-%m-%d %H:%i:%s')) "
                 + "WHERE encounter_id = :encounterId", params);
 
         namedParameterJdbcTemplate.update("UPDATE enc_admissions "
-                + "SET pre_discharge_date = TIMESTAMP(STR_TO_DATE(:preDischargeDate, '%Y-%m-%d'), IFNULL(TIME(pre_discharge_date), '00:00:00')), "
+                + "SET pre_discharge_date = STR_TO_DATE(:preDischargeDate, '%Y-%m-%d'), "
                 + "pre_discharge_time = :preDischargeTime "
-                + "WHERE encounter_id = :encounterId", params);
+                + "WHERE admission_id = :admissionId", params);
 
         DischargeEncounterRow after = loadSnapshot(encounterId, false);
         if (sameValues(before, after)) {
@@ -122,6 +133,9 @@ public class DischargeDateService {
     }
 
     public List<DischargeDateAuditEntry> loadAuditLog(String encounterId, String mrn) {
+        if (isBlank(encounterId) && isBlank(mrn)) {
+            throw new IllegalArgumentException("Sila nyatakan encounter atau MRN pesakit.");
+        }
         ensureAuditTable();
 
         StringBuilder sql = new StringBuilder()
@@ -175,8 +189,7 @@ public class DischargeDateService {
         String sql = "SELECT " + SNAPSHOT_COLUMNS
                 + "FROM encounters e "
                 + "INNER JOIN patients a ON a.patient_id = e.patient_id "
-                + "INNER JOIN enc_admissions m ON m.encounter_id = e.encounter_id "
-                + "LEFT JOIN enc_discharges d ON d.encounter_id = e.encounter_id "
+                + ADMISSION_DISCHARGE_JOINS
                 + "WHERE e.encounter_id = :encounterId "
                 + "AND e.domain_code = 'IN'"
                 + (lockRows ? " FOR UPDATE" : "");
@@ -198,6 +211,7 @@ public class DischargeDateService {
         row.setAdmissionId(rs.getString("admission_id"));
         row.setPatientMrn(rs.getString("patient_mrn"));
         row.setDischargeWard(rs.getString("discharge_ward"));
+        row.setDischargeWardName(rs.getString("discharge_ward_name"));
         row.setEncounterDate(rs.getString("encounter_date"));
         row.setEncounterDischargeDate(rs.getString("encounter_discharge_date"));
         row.setEncDischargeDate(rs.getString("enc_discharge_date"));
@@ -290,6 +304,20 @@ public class DischargeDateService {
         candidates.add(MRN_PREFIX + digits);
         candidates.add(digits);
         return candidates;
+    }
+
+    // Accepts the browser's datetime-local value (yyyy-MM-ddTHH:mm[:ss]) or a space-separated form;
+    // returns yyyy-MM-dd HH:mm:ss so it compares directly with the DATE_FORMAT'ed snapshot values.
+    private String requireDateTime(String value, String label) {
+        if (isBlank(value)) {
+            throw new IllegalArgumentException(label + " diperlukan.");
+        }
+        try {
+            LocalDateTime parsed = LocalDateTime.parse(value.trim().replace(' ', 'T'));
+            return parsed.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException(label + " mesti dalam format YYYY-MM-DD HH:mm.");
+        }
     }
 
     private String requireDate(String value, String label) {

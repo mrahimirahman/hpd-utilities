@@ -11,6 +11,7 @@ interface DischargeEncounterRow {
   personName: string;
   personNewIc: string;
   dischargeWard: string;
+  dischargeWardName: string | null;
   encounterDate: string;
   encounterDischargeDate: string | null;
   encDischargeDate: string | null;
@@ -94,7 +95,8 @@ export class DischargeDateComponent {
     this.selected.set(row);
     this.errorMessage.set('');
     this.successMessage.set('');
-    this.dischargeDate = this.datePart(row.encounterDischargeDate) || this.datePart(row.encDischargeDate);
+    this.dischargeDate = this.dateTimeLocal(row.encounterDischargeDate)
+      || (row.encDischargeDate ? `${this.datePart(row.encDischargeDate)}T00:00` : '');
     this.preDischargeDate = this.datePart(row.preDischargeDate);
     this.preDischargeTime = (row.preDischargeTime ?? '').slice(0, 5);
     this.reason = '';
@@ -112,7 +114,7 @@ export class DischargeDateComponent {
       return;
     }
     if (!this.dischargeDate || !this.preDischargeDate || !this.preDischargeTime) {
-      this.errorMessage.set('Sila lengkapkan Discharge Date, Pre Discharge Date dan Pre Discharge Time.');
+      this.errorMessage.set('Sila lengkapkan Discharge Date & Time, Pre Discharge Date dan Pre Discharge Time.');
       return;
     }
     if (!window.confirm(`Kemaskini tarikh discaj untuk ${row.patientMrn} (encounter ${row.encounterId})?`)) {
@@ -152,6 +154,20 @@ export class DischargeDateComponent {
       next: (entries) => this.auditEntries.set(entries),
       error: () => this.auditEntries.set([])
     });
+  }
+
+  // 'YYYY-MM-DD[ HH:mm:ss]' -> 'DD-MM-YYYY[ HH:mm:ss]' for display; '-' when empty
+  fmt(value: string | null): string {
+    if (!value) {
+      return '-';
+    }
+    const match = /^(\d{4})-(\d{2})-(\d{2})(.*)$/.exec(value);
+    return match ? `${match[3]}-${match[2]}-${match[1]}${match[4]}` : value;
+  }
+
+  // 'YYYY-MM-DD HH:mm:ss' -> 'YYYY-MM-DDTHH:mm' for <input type="datetime-local">
+  private dateTimeLocal(value: string | null): string {
+    return value ? value.slice(0, 16).replace(' ', 'T') : '';
   }
 
   private datePart(value: string | null): string {

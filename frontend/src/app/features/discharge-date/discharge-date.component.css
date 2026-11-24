@@ -167,3 +167,16 @@ td button {
     grid-template-columns: 1fr;
   }
 }
+
+td {
+  white-space: nowrap;
+}
+
+td.wrap {
+  white-space: normal;
+  min-width: 220px;
+}
+
+td small.code {
+  color: var(--muted);
+}

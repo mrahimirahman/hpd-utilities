@@ -1,6 +1,6 @@
 <section class="discharge-shell">
   <div class="discharge-header">
-    <h2>Changes Discharge Date</h2>
+    <h2>Update Discharge Time</h2>
     <p>Pembetulan tarikh discaj pesakit (Borang Aduan HIS&#64;KKM). Cari pesakit melalui MRN, pilih encounter, kemudian kemaskini tarikh discaj. Setiap perubahan direkod dalam audit trail.</p>
   </div>
 
@@ -56,12 +56,12 @@
             <td>{{ row.personName }}</td>
             <td>{{ row.personNewIc }}</td>
             <td>{{ row.encounterId }}</td>
-            <td>{{ row.encounterDate }}</td>
-            <td>{{ row.dischargeWard }}</td>
-            <td>{{ row.encounterDischargeDate || '-' }}</td>
-            <td>{{ row.encDischargeDate || '-' }}</td>
-            <td>{{ row.preDischargeDate || '-' }}</td>
-            <td>{{ row.preDischargeTime || '-' }}</td>
+            <td>{{ fmt(row.encounterDate) }}</td>
+            <td>{{ row.dischargeWardName || row.dischargeWard }} <small class="code" *ngIf="row.dischargeWardName">({{ row.dischargeWard }})</small></td>
+            <td>{{ fmt(row.encounterDischargeDate) }}</td>
+            <td>{{ fmt(row.encDischargeDate) }}</td>
+            <td>{{ fmt(row.preDischargeDate) }}</td>
+            <td>{{ fmt(row.preDischargeTime) }}</td>
             <td>
               <button class="secondary" type="button" (click)="select(row)" [disabled]="isSaving()">Pilih</button>
             </td>
@@ -74,26 +74,26 @@
   <section class="card discharge-edit" *ngIf="selected() as row">
     <div class="table-header">
       <h3>Kemaskini Tarikh Discaj</h3>
-      <p>{{ row.patientMrn }} &middot; {{ row.personName }} &middot; Encounter {{ row.encounterId }} &middot; Admission {{ row.encounterDate }}</p>
+      <p>{{ row.patientMrn }} &middot; {{ row.personName }} &middot; Encounter {{ row.encounterId }} &middot; Admission {{ fmt(row.encounterDate) }}</p>
     </div>
 
     <div class="edit-grid">
       <label>
-        <span>Discharge Date</span>
-        <input type="date" [(ngModel)]="dischargeDate">
-        <small>Semasa: encounters {{ row.encounterDischargeDate || '-' }} / enc_discharges {{ row.encDischargeDate || '-' }}</small>
+        <span>Discharge Date &amp; Time</span>
+        <input type="datetime-local" [(ngModel)]="dischargeDate">
+        <small>Semasa: encounters {{ fmt(row.encounterDischargeDate) }} / enc_discharges {{ fmt(row.encDischargeDate) }}</small>
       </label>
 
       <label>
         <span>Pre Discharge Date</span>
         <input type="date" [(ngModel)]="preDischargeDate">
-        <small>Semasa: {{ row.preDischargeDate || '-' }}</small>
+        <small>Semasa: {{ fmt(row.preDischargeDate) }}</small>
       </label>
 
       <label>
         <span>Pre Discharge Time</span>
         <input type="time" [(ngModel)]="preDischargeTime">
-        <small>Semasa: {{ row.preDischargeTime || '-' }}</small>
+        <small>Semasa: {{ fmt(row.preDischargeTime) }}</small>
       </label>
 
       <label class="reason">
@@ -135,13 +135,13 @@
         </thead>
         <tbody>
           <tr *ngFor="let entry of auditEntries()">
-            <td>{{ entry.editedAt }}</td>
+            <td>{{ fmt(entry.editedAt) }}</td>
             <td>{{ entry.editedName || entry.editedBy }}</td>
-            <td>{{ entry.encounterDischargeDateBefore || '-' }} &rarr; {{ entry.encounterDischargeDateAfter || '-' }}</td>
-            <td>{{ entry.encDischargeDateBefore || '-' }} &rarr; {{ entry.encDischargeDateAfter || '-' }}</td>
-            <td>{{ entry.preDischargeDateBefore || '-' }} &rarr; {{ entry.preDischargeDateAfter || '-' }}</td>
-            <td>{{ entry.preDischargeTimeBefore || '-' }} &rarr; {{ entry.preDischargeTimeAfter || '-' }}</td>
-            <td>{{ entry.reason || '-' }}</td>
+            <td>{{ fmt(entry.encounterDischargeDateBefore) }} &rarr; {{ fmt(entry.encounterDischargeDateAfter) }}</td>
+            <td>{{ fmt(entry.encDischargeDateBefore) }} &rarr; {{ fmt(entry.encDischargeDateAfter) }}</td>
+            <td>{{ fmt(entry.preDischargeDateBefore) }} &rarr; {{ fmt(entry.preDischargeDateAfter) }}</td>
+            <td>{{ fmt(entry.preDischargeTimeBefore) }} &rarr; {{ fmt(entry.preDischargeTimeAfter) }}</td>
+            <td class="wrap">{{ fmt(entry.reason) }}</td>
           </tr>
         </tbody>
       </table>
