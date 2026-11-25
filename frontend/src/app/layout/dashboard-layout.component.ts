@@ -27,6 +27,7 @@ export class DashboardLayoutComponent {
     { label: 'HPD Reports', shortLabel: 'Laporan', route: '/reports', icon: 'query_stats' },
     { label: 'Update Discharge Time', shortLabel: 'Discaj', route: '/discharge-date', icon: 'schedule' },
     { label: 'Update Death Date', shortLabel: 'Kematian', route: '/death-date', icon: 'event_busy' },
+    { label: 'Ticket Report', shortLabel: 'Tiket', route: '/ticket-report', icon: 'confirmation_number', requiresAdmin: true },
     { label: 'Audit Log', shortLabel: 'Audit', route: '/reports/audit', icon: 'verified_user', requiresAdmin: true }
   ];
 
