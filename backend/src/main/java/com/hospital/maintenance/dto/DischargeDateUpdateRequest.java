@@ -9,6 +9,7 @@ public class DischargeDateUpdateRequest {
     private String preDischargeDate;
     private String preDischargeTime;
     private String reason;
+    private String ticketNo;
 
     public String getEncounterId() {
         return encounterId;
@@ -48,6 +49,14 @@ public class DischargeDateUpdateRequest {
 
     public void setReason(String reason) {
         this.reason = reason;
+    }
+
+    public String getTicketNo() {
+        return ticketNo;
+    }
+
+    public void setTicketNo(String ticketNo) {
+        this.ticketNo = ticketNo;
     }
 
     public String getMode() {

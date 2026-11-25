@@ -38,6 +38,7 @@ public class DischargeDateService {
     public static final String MODE_DEATH = "DEATH";
 
     private static final String MRN_PREFIX = "HPD";
+    private static final int MAX_TICKET_NO_LENGTH = 50;
     private static final Pattern TIME_PATTERN = Pattern.compile("^([01]\\d|2[0-3]):[0-5]\\d$");
 
     private static final String SNAPSHOT_COLUMNS = "e.encounter_id, m.admission_id, a.patient_mrn, e.discharge_ward, "
@@ -103,6 +104,13 @@ public class DischargeDateService {
         if (!TIME_PATTERN.matcher(preDischargeTime).matches()) {
             throw new IllegalArgumentException("Pre Discharge Time mesti dalam format HH:mm (cth. 14:30).");
         }
+        final String ticketNo = request.getTicketNo() == null ? "" : request.getTicketNo().trim();
+        if (ticketNo.isEmpty()) {
+            throw new IllegalArgumentException("No. Tiket diperlukan.");
+        }
+        if (ticketNo.length() > MAX_TICKET_NO_LENGTH) {
+            throw new IllegalArgumentException("No. Tiket tidak boleh melebihi " + MAX_TICKET_NO_LENGTH + " aksara.");
+        }
         final boolean deathMode = isDeathMode(request.getMode());
         final String deathDateTime = deathMode ? requireDateTime(request.getDeathDate(), "Death Date") : null;
 
@@ -115,14 +123,14 @@ public class DischargeDateService {
             @Override
             public DischargeEncounterRow doInTransaction(TransactionStatus status) {
                 return applyUpdate(encounterId, dischargeDateTime, preDischargeDate, preDischargeTime,
-                        deathMode, deathDateTime, request.getReason(), editedBy);
+                        deathMode, deathDateTime, ticketNo, request.getReason(), editedBy);
             }
         });
     }
 
     private DischargeEncounterRow applyUpdate(String encounterId, String dischargeDateTime, String preDischargeDate,
                                               String preDischargeTime, boolean deathMode, String deathDateTime,
-                                              String reason, SystemUser editedBy) {
+                                              String ticketNo, String reason, SystemUser editedBy) {
         DischargeEncounterRow before = loadSnapshot(encounterId, true);
         if (before == null) {
             throw new IllegalArgumentException("Rekod encounter IN tidak dijumpai.");
@@ -173,7 +181,7 @@ public class DischargeDateService {
         if (sameValues(before, after)) {
             throw new IllegalArgumentException("Tiada perubahan pada tarikh discaj.");
         }
-        insertAuditRecord(deathMode ? MODE_DEATH : MODE_DISCHARGE, before, after, reason, editedBy);
+        insertAuditRecord(deathMode ? MODE_DEATH : MODE_DISCHARGE, before, after, ticketNo, reason, editedBy);
         return after;
     }
 
@@ -184,7 +192,7 @@ public class DischargeDateService {
         ensureAuditTable();
 
         StringBuilder sql = new StringBuilder()
-                .append("SELECT id, module, encounter_id, admission_id, patient_mrn, ")
+                .append("SELECT id, module, ticket_no, encounter_id, admission_id, patient_mrn, ")
                 .append("encounter_discharge_date_before, encounter_discharge_date_after, ")
                 .append("enc_discharge_date_before, enc_discharge_date_after, ")
                 .append("pre_discharge_date_before, pre_discharge_date_after, ")
@@ -211,6 +219,7 @@ public class DischargeDateService {
                 DischargeDateAuditEntry entry = new DischargeDateAuditEntry();
                 entry.setId(rs.getLong("id"));
                 entry.setModule(rs.getString("module"));
+                entry.setTicketNo(rs.getString("ticket_no"));
                 entry.setEncounterId(rs.getString("encounter_id"));
                 entry.setAdmissionId(rs.getString("admission_id"));
                 entry.setPatientMrn(rs.getString("patient_mrn"));
@@ -271,15 +280,16 @@ public class DischargeDateService {
         return row;
     }
 
-    private void insertAuditRecord(String module, DischargeEncounterRow before, DischargeEncounterRow after, String reason, SystemUser editedBy) {
-        String sql = "INSERT INTO discharge_date_audit (module, encounter_id, admission_id, patient_mrn, "
+    private void insertAuditRecord(String module, DischargeEncounterRow before, DischargeEncounterRow after,
+                                   String ticketNo, String reason, SystemUser editedBy) {
+        String sql = "INSERT INTO discharge_date_audit (module, ticket_no, encounter_id, admission_id, patient_mrn, "
                 + "encounter_discharge_date_before, encounter_discharge_date_after, "
                 + "enc_discharge_date_before, enc_discharge_date_after, "
                 + "pre_discharge_date_before, pre_discharge_date_after, "
                 + "pre_discharge_time_before, pre_discharge_time_after, "
                 + "death_date_before, death_date_after, "
                 + "reason, edited_by, edited_name, edited_role, edited_at) "
-                + "VALUES (:module, :encounterId, :admissionId, :patientMrn, "
+                + "VALUES (:module, :ticketNo, :encounterId, :admissionId, :patientMrn, "
                 + ":encounterDischargeDateBefore, :encounterDischargeDateAfter, "
                 + ":encDischargeDateBefore, :encDischargeDateAfter, "
                 + ":preDischargeDateBefore, :preDischargeDateAfter, "
@@ -289,6 +299,7 @@ public class DischargeDateService {
 
         namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("module", module)
+                .addValue("ticketNo", ticketNo)
                 .addValue("encounterId", before.getEncounterId())
                 .addValue("admissionId", before.getAdmissionId())
                 .addValue("patientMrn", before.getPatientMrn())
@@ -321,6 +332,7 @@ public class DischargeDateService {
                     "CREATE TABLE IF NOT EXISTS discharge_date_audit ("
                             + "id BIGINT NOT NULL AUTO_INCREMENT, "
                             + "module VARCHAR(20), "
+                            + "ticket_no VARCHAR(50), "
                             + "encounter_id VARCHAR(50) NOT NULL, "
                             + "admission_id VARCHAR(50), "
                             + "patient_mrn VARCHAR(50), "
@@ -349,6 +361,7 @@ public class DischargeDateService {
             addAuditColumnIfMissing("module", "VARCHAR(20) AFTER id");
             addAuditColumnIfMissing("death_date_before", "VARCHAR(30) AFTER pre_discharge_time_after");
             addAuditColumnIfMissing("death_date_after", "VARCHAR(30) AFTER death_date_before");
+            addAuditColumnIfMissing("ticket_no", "VARCHAR(50) AFTER module");
             namedParameterJdbcTemplate.getJdbcOperations().update(
                     "UPDATE discharge_date_audit SET module = '" + MODE_DISCHARGE + "' WHERE module IS NULL");
             auditTableInitialized = true;

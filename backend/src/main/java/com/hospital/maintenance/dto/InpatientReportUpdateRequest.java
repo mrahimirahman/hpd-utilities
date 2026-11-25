@@ -6,6 +6,7 @@ public class InpatientReportUpdateRequest {
 
     private String wardCode;
     private String reportDate;
+    private String ticketNo;
     private List<ReportCellUpdate> updates;
 
     public String getWardCode() {
@@ -22,6 +23,14 @@ public class InpatientReportUpdateRequest {
 
     public void setReportDate(String reportDate) {
         this.reportDate = reportDate;
+    }
+
+    public String getTicketNo() {
+        return ticketNo;
+    }
+
+    public void setTicketNo(String ticketNo) {
+        this.ticketNo = ticketNo;
     }
 
     public List<ReportCellUpdate> getUpdates() {

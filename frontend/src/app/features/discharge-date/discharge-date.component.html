@@ -189,6 +189,12 @@
         </label>
       </div>
 
+      <label class="field ticket-field">
+        <span class="field-label">No. Tiket <span class="required">*</span></span>
+        <input class="input mono" type="text" maxlength="50" required [(ngModel)]="ticketNo" placeholder="cth. no. Borang Aduan / tiket helpdesk">
+        <span class="field-hint">Wajib diisi bagi setiap kemaskini.</span>
+      </label>
+
       <label class="field">
         <span class="field-label">Penerangan / Sebab <small>Maks. 500 aksara</small></span>
         <textarea class="textarea" rows="3" maxlength="500" [(ngModel)]="reason" placeholder="cth. Salah tarikh discaj, tarikh betul 20/11/26 (Borang Aduan Wad Dahlia)"></textarea>
@@ -233,6 +239,7 @@
           <tr>
             <th>Tarikh Kemaskini</th>
             <th>Oleh</th>
+            <th>No. Tiket</th>
             <th *ngIf="deathMode">Death Date</th>
             <th>Discharge (encounters)</th>
             <th>Discharge (enc_discharges)</th>
@@ -245,6 +252,7 @@
           <tr *ngFor="let entry of auditEntries()">
             <td class="nowrap">{{ fmt(entry.editedAt) }}</td>
             <td class="name-cell">{{ entry.editedName || entry.editedBy }}</td>
+            <td class="mono nowrap">{{ entry.ticketNo || '-' }}</td>
             <td *ngIf="deathMode"><span class="change"><span class="before">{{ fmt(entry.deathDateBefore) }}</span><span class="arrow">&rarr;</span><span class="after">{{ fmt(entry.deathDateAfter) }}</span></span></td>
             <td><span class="change"><span class="before">{{ fmt(entry.encounterDischargeDateBefore) }}</span><span class="arrow">&rarr;</span><span class="after">{{ fmt(entry.encounterDischargeDateAfter) }}</span></span></td>
             <td><span class="change"><span class="before">{{ fmt(entry.encDischargeDateBefore) }}</span><span class="arrow">&rarr;</span><span class="after">{{ fmt(entry.encDischargeDateAfter) }}</span></span></td>

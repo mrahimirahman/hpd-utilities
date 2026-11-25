@@ -38,6 +38,14 @@
   gap: var(--space-sm);
 }
 
+.action-group--edit {
+  align-items: flex-end;
+}
+
+.ticket-field {
+  min-width: 220px;
+}
+
 /* ---------- Report card ---------- */
 
 .report-card {
