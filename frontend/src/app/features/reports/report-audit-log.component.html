@@ -121,6 +121,7 @@
             <tr>
               <th>Edited At</th>
               <th>User</th>
+              <th>Ticket No</th>
               <th>Ward</th>
               <th>Report Date</th>
               <th>Discipline</th>
@@ -137,6 +138,7 @@
                 <div class="user-name">{{ entry.editedName || entry.editedBy }}</div>
                 <div class="user-meta">{{ entry.editedBy }}<span *ngIf="entry.editedRole"> · {{ entry.editedRole }}</span></div>
               </td>
+              <td class="mono nowrap">{{ entry.ticketNo || '-' }}</td>
               <td>{{ entry.wardName || entry.wardCode }}</td>
               <td class="tnum nowrap">{{ entry.reportDate }}</td>
               <td>{{ entry.disciplineName || entry.disciplineCode }}</td>
@@ -183,6 +185,7 @@
           </div>
 
           <dl class="audit-card__details">
+            <div><dt>Ticket No</dt><dd class="mono">{{ entry.ticketNo || '-' }}</dd></div>
             <div><dt>Ward</dt><dd>{{ entry.wardName || entry.wardCode }}</dd></div>
             <div><dt>Report Date</dt><dd class="tnum">{{ entry.reportDate }}</dd></div>
             <div><dt>Discipline</dt><dd>{{ entry.disciplineName || entry.disciplineCode }}</dd></div>

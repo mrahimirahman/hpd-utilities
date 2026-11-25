@@ -51,6 +51,7 @@ interface ReportCellUpdate {
 interface InpatientReportUpdateRequest {
   wardCode: string;
   reportDate: string;
+  ticketNo: string;
   updates: ReportCellUpdate[];
 }
 
@@ -76,6 +77,7 @@ export class InpatientReportComponent implements OnInit {
   selectedWardCode = '';
   selectedWardName = 'UNIT ICU/CCU';
   selectedDate = this.today();
+  ticketNo = '';
   generatedWardName = this.selectedWardName;
   generatedDate = this.selectedDate;
 
@@ -177,11 +179,13 @@ export class InpatientReportComponent implements OnInit {
     this.successMessage.set('');
     this.errorMessage.set('');
     this.draftRows.set(this.cloneRows(this.reportRows()));
+    this.ticketNo = '';
     this.isEditMode.set(true);
   }
 
   cancelEdit(): void {
     this.draftRows.set(this.cloneRows(this.reportRows()));
+    this.ticketNo = '';
     this.isEditMode.set(false);
   }
 
@@ -192,6 +196,10 @@ export class InpatientReportComponent implements OnInit {
       this.isEditMode.set(false);
       return;
     }
+    if (!this.ticketNo.trim()) {
+      this.errorMessage.set('Sila masukkan No. Tiket sebelum menyimpan.');
+      return;
+    }
 
     this.isSaving.set(true);
     this.errorMessage.set('');
@@ -200,6 +208,7 @@ export class InpatientReportComponent implements OnInit {
     const payload: InpatientReportUpdateRequest = {
       wardCode: this.selectedWardCode,
       reportDate: this.selectedDate,
+      ticketNo: this.ticketNo.trim(),
       updates
     };
 
@@ -212,6 +221,7 @@ export class InpatientReportComponent implements OnInit {
         this.generatedDate = response.reportDate || this.generatedDate;
         this.isSaving.set(false);
         this.isEditMode.set(false);
+        this.ticketNo = '';
         this.successMessage.set('Report data updated successfully.');
       },
       error: (error) => {

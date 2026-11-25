@@ -25,6 +25,7 @@ interface DischargeEncounterRow {
 interface DischargeDateAuditEntry {
   id: number;
   module: string | null;
+  ticketNo: string | null;
   encounterId: string;
   patientMrn: string;
   encounterDischargeDateBefore: string | null;
@@ -68,6 +69,7 @@ export class DischargeDateComponent {
   preDischargeDate = '';
   preDischargeTime = '';
   deathDate = '';
+  ticketNo = '';
   reason = '';
 
   constructor(private readonly http: HttpClient, route: ActivatedRoute) {
@@ -112,6 +114,7 @@ export class DischargeDateComponent {
     this.preDischargeDate = this.datePart(row.preDischargeDate);
     this.preDischargeTime = (row.preDischargeTime ?? '').slice(0, 5);
     this.deathDate = this.dateTimeLocal(row.deathDate);
+    this.ticketNo = '';
     this.reason = '';
     this.loadAudit(row.encounterId);
   }
@@ -126,6 +129,10 @@ export class DischargeDateComponent {
     if (!row) {
       return;
     }
+    if (!this.ticketNo.trim()) {
+      this.errorMessage.set('Sila masukkan No. Tiket.');
+      return;
+    }
     if (!this.dischargeDate || !this.preDischargeDate || !this.preDischargeTime) {
       this.errorMessage.set('Sila lengkapkan Discharge Date & Time, Pre Discharge Date dan Pre Discharge Time.');
       return;
@@ -135,7 +142,7 @@ export class DischargeDateComponent {
       return;
     }
     const label = this.deathMode ? 'tarikh kematian' : 'tarikh discaj';
-    if (!window.confirm(`Kemaskini ${label} untuk ${row.patientMrn} (encounter ${row.encounterId})?`)) {
+    if (!window.confirm(`Kemaskini ${label} untuk ${row.patientMrn} (encounter ${row.encounterId}), No. Tiket ${this.ticketNo.trim()}?`)) {
       return;
     }
 
@@ -150,12 +157,14 @@ export class DischargeDateComponent {
       preDischargeTime: this.preDischargeTime,
       mode: this.deathMode ? 'DEATH' : 'DISCHARGE',
       deathDate: this.deathMode ? this.deathDate : null,
+      ticketNo: this.ticketNo.trim(),
       reason: this.reason
     }).subscribe({
       next: (updated) => {
         const merged = { ...row, ...updated, personName: row.personName, personNewIc: row.personNewIc };
         this.rows.set(this.rows().map((item) => item.encounterId === merged.encounterId ? merged : item));
         this.selected.set(merged);
+        this.ticketNo = '';
         this.reason = '';
         this.isSaving.set(false);
         this.successMessage.set(this.deathMode ? 'Tarikh kematian berjaya dikemaskini.' : 'Tarikh discaj berjaya dikemaskini.');

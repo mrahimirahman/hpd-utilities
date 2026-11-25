@@ -19,6 +19,7 @@ public class ReportAuditLogEntry {
     private String editedName;
     private String editedRole;
     private String editedAt;
+    private String ticketNo;
 
     public Long getId() {
         return id;
@@ -154,5 +155,13 @@ public class ReportAuditLogEntry {
 
     public void setEditedAt(String editedAt) {
         this.editedAt = editedAt;
+    }
+
+    public String getTicketNo() {
+        return ticketNo;
+    }
+
+    public void setTicketNo(String ticketNo) {
+        this.ticketNo = ticketNo;
     }
 }

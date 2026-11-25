@@ -22,6 +22,7 @@ import java.util.List;
 @Service
 public class InpatientReportService {
     private static final int MAX_DISCIPLINES = 6;
+    private static final int MAX_TICKET_NO_LENGTH = 50;
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private volatile boolean auditTableInitialized;
@@ -37,7 +38,7 @@ public class InpatientReportService {
                 .append("DATE_FORMAT(a.report_date, '%Y-%m-%d') AS report_date, ")
                 .append("a.discipline_code, rg.discipline_name, a.metric_index, ")
                 .append("a.previous_male, a.previous_female, a.new_male, a.new_female, ")
-                .append("a.edited_by, a.edited_name, a.edited_role, ")
+                .append("a.edited_by, a.edited_name, a.edited_role, a.ticket_no, ")
                 .append("DATE_FORMAT(a.edited_at, '%Y-%m-%d %H:%i:%s') AS edited_at ")
                 .append("FROM report_edit_audit a ")
                 .append("LEFT JOIN ref_locations rl ON rl.location_code = a.ward_code ")
@@ -79,6 +80,7 @@ public class InpatientReportService {
                 entry.setEditedName(rs.getString("edited_name"));
                 entry.setEditedRole(rs.getString("edited_role"));
                 entry.setEditedAt(rs.getString("edited_at"));
+                entry.setTicketNo(rs.getString("ticket_no"));
                 return entry;
             }
         });
@@ -108,6 +110,13 @@ public class InpatientReportService {
         if (editedBy == null || editedBy.getUsername() == null) {
             throw new IllegalArgumentException("Unable to identify the user saving this report.");
         }
+        String ticketNo = request.getTicketNo() == null ? "" : request.getTicketNo().trim();
+        if (ticketNo.isEmpty()) {
+            throw new IllegalArgumentException("No. Tiket diperlukan.");
+        }
+        if (ticketNo.length() > MAX_TICKET_NO_LENGTH) {
+            throw new IllegalArgumentException("No. Tiket tidak boleh melebihi " + MAX_TICKET_NO_LENGTH + " aksara.");
+        }
 
         ensureAuditTable();
 
@@ -127,7 +136,7 @@ public class InpatientReportService {
 
             int updatedRows = saveMetricValue(request.getWardCode(), request.getReportDate(), update);
             if (updatedRows > 0) {
-                insertAuditRecord(request.getWardCode(), request.getReportDate(), update, before, editedBy);
+                insertAuditRecord(request.getWardCode(), request.getReportDate(), update, before, ticketNo, editedBy);
             }
         }
 
@@ -184,9 +193,9 @@ public class InpatientReportService {
         return snapshots.isEmpty() ? null : snapshots.get(0);
     }
 
-    private void insertAuditRecord(String wardCode, String reportDate, ReportCellUpdate update, MetricSnapshot before, SystemUser editedBy) {
-        String sql = "INSERT INTO report_edit_audit (report_code, ward_code, report_date, discipline_code, metric_index, previous_male, previous_female, new_male, new_female, edited_by, edited_name, edited_role, edited_at) "
-                + "VALUES (:reportCode, :wardCode, STR_TO_DATE(:reportDate, '%Y-%m-%d'), :disciplineCode, :metricIndex, :previousMale, :previousFemale, :newMale, :newFemale, :editedBy, :editedName, :editedRole, :editedAt)";
+    private void insertAuditRecord(String wardCode, String reportDate, ReportCellUpdate update, MetricSnapshot before, String ticketNo, SystemUser editedBy) {
+        String sql = "INSERT INTO report_edit_audit (report_code, ward_code, report_date, discipline_code, metric_index, previous_male, previous_female, new_male, new_female, ticket_no, edited_by, edited_name, edited_role, edited_at) "
+                + "VALUES (:reportCode, :wardCode, STR_TO_DATE(:reportDate, '%Y-%m-%d'), :disciplineCode, :metricIndex, :previousMale, :previousFemale, :newMale, :newFemale, :ticketNo, :editedBy, :editedName, :editedRole, :editedAt)";
 
         namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("reportCode", "PD103")
@@ -198,6 +207,7 @@ public class InpatientReportService {
                 .addValue("previousFemale", before.female)
                 .addValue("newMale", update.getMale())
                 .addValue("newFemale", update.getFemale())
+                .addValue("ticketNo", ticketNo)
                 .addValue("editedBy", editedBy.getUsername())
                 .addValue("editedName", editedBy.getFullName())
                 .addValue("editedRole", editedBy.getRole())
@@ -265,6 +275,7 @@ public class InpatientReportService {
                             + "previous_female INT NOT NULL, "
                             + "new_male INT NOT NULL, "
                             + "new_female INT NOT NULL, "
+                            + "ticket_no VARCHAR(50), "
                             + "edited_by VARCHAR(50) NOT NULL, "
                             + "edited_name VARCHAR(120), "
                             + "edited_role VARCHAR(50), "
@@ -274,6 +285,15 @@ public class InpatientReportService {
                             + "KEY idx_report_edit_audit_user (edited_by, edited_at)"
                             + ") ENGINE=InnoDB DEFAULT CHARSET=utf8"
             );
+            // Tables created before Ticket No became mandatory lack this column.
+            Integer ticketColumn = namedParameterJdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM information_schema.columns "
+                            + "WHERE table_schema = DATABASE() AND table_name = 'report_edit_audit' AND column_name = 'ticket_no'",
+                    new MapSqlParameterSource(), Integer.class);
+            if (ticketColumn == null || ticketColumn == 0) {
+                namedParameterJdbcTemplate.getJdbcOperations().execute(
+                        "ALTER TABLE report_edit_audit ADD COLUMN ticket_no VARCHAR(50) AFTER new_female");
+            }
             auditTableInitialized = true;
         }
     }

@@ -129,6 +129,10 @@
   max-width: 420px;
 }
 
+.ticket-field {
+  max-width: 420px;
+}
+
 .current-value {
   display: flex;
   flex-wrap: wrap;

@@ -58,6 +58,10 @@
         </div>
 
         <div class="action-group action-group--edit">
+          <label class="field ticket-field" *ngIf="isEditMode()">
+            <span class="field-label">No. Tiket <span class="required">*</span></span>
+            <input id="pd103-ticket" class="input mono" type="text" maxlength="50" required [(ngModel)]="ticketNo" [disabled]="isSaving()" placeholder="Wajib sebelum Simpan">
+          </label>
           <button class="btn btn-accent" type="button" (click)="startEdit()" *ngIf="canEditReport()" [disabled]="reportRows().length === 0 || isEditMode() || isSaving()">
             <span class="material-symbols-outlined">edit_square</span>
             Mod Kemaskini (Admin)

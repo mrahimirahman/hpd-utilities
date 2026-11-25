@@ -29,6 +29,7 @@ interface ReportAuditLogEntry {
   editedName?: string;
   editedRole?: string;
   editedAt: string;
+  ticketNo?: string | null;
 }
 
 @Component({

@@ -3,6 +3,7 @@ package com.hospital.maintenance.dto;
 public class DischargeDateAuditEntry {
 
     private String module;
+    private String ticketNo;
     private String deathDateBefore;
     private String deathDateAfter;
     private Long id;
@@ -165,6 +166,14 @@ public class DischargeDateAuditEntry {
 
     public void setModule(String module) {
         this.module = module;
+    }
+
+    public String getTicketNo() {
+        return ticketNo;
+    }
+
+    public void setTicketNo(String ticketNo) {
+        this.ticketNo = ticketNo;
     }
 
     public String getDeathDateBefore() {

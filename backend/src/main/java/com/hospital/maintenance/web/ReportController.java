@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -75,16 +76,20 @@ public class ReportController {
     }
 
     @PostMapping("/inpatient")
-    public ResponseEntity<InpatientReportResponse> saveInpatientReport(@RequestBody InpatientReportUpdateRequest request,
-                                                                       HttpSession session) {
+    public ResponseEntity<?> saveInpatientReport(@RequestBody InpatientReportUpdateRequest request,
+                                                 HttpSession session) {
         SystemUser user = (SystemUser) session.getAttribute(AuthService.SESSION_USER_KEY);
         if (user == null) {
-            return new ResponseEntity<InpatientReportResponse>(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
         }
         if (!"ADMIN".equalsIgnoreCase(user.getRole())) {
-            return new ResponseEntity<InpatientReportResponse>(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<Object>(HttpStatus.FORBIDDEN);
         }
-        return ResponseEntity.ok(inpatientReportService.save(request, user));
+        try {
+            return ResponseEntity.ok(inpatientReportService.save(request, user));
+        } catch (IllegalArgumentException ex) {
+            return new ResponseEntity<Object>(Collections.singletonMap("message", ex.getMessage()), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/dama-diagnosis")
